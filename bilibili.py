@@ -32,7 +32,7 @@ def count_and_write_to_excel(content_list, excel_file):
 def getdm(url):  # 从指定url获取弹幕存储在content_list
     global content_list
     headers = {  # 请求表头
-        'user-agent': '' 
+        'user-agent': '' # 浏览器的user-agent信息
     }
     response = requests.get(url=url, headers=headers)  # 发送请求
     response.encoding = 'utf-8'  # 解决乱码
@@ -62,8 +62,8 @@ def bvid2cid(bvid):  # 将BV号转化为cid
 
 
 headers = {
-    'User-Agent': '',
-    'Cookie': ""}
+    'User-Agent': '',  # 浏览器的user-agent信息
+    'Cookie': ""}  # 浏览器的cookie信息
 
 keyword = '日本核污染水排海'  # 爬取视频弹幕的主题
 desired_count = 300  # 总共需要获取的BV号数量
@@ -84,7 +84,7 @@ while current_count < desired_count:
     if len(BVs) == 0:
         break
     print(search_url)
-    time.sleep(1)
+    time.sleep(1)  # 防止访问太频繁
 
 print(f'获取到了 {len(bvs)} 个BV号：')
 
