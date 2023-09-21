@@ -1,0 +1,233 @@
+from random import randint
+
+player_dices = [[], []]
+rate = 1
+
+
+def dice():
+    point = randint(1, 6)
+    return point
+
+
+def roll_dice(i):
+    score = []
+    for i in range(1, i+1):
+        score.append(dice())
+    print('投掷结果为'+str(score))
+    return score
+
+
+def lock_dice(free_dice_number, player):
+    global player_dices
+    each_dice_point = roll_dice(free_dice_number)
+    print('玩家'+str(player)+'回合')
+    print('输入你想锁定的骰子(输入该骰子的位置,-1为放弃,空格分离):')
+    choose_dice = []  # 锁定的骰子位置
+    for i in map(int, input().split(' ')):
+        choose_dice.append(i)
+    if player == 1:
+        player1_lock = player_dices[0]
+        player2_lock = player_dices[1]
+        del player_dices[0:2]
+        for i in range(1, free_dice_number + 1):
+            if i in choose_dice:
+                player1_lock.append(each_dice_point[i - 1])
+        player1_lock.sort()
+        player_dices.append(player1_lock)
+        player_dices.append(player2_lock)  # 更新两方目前的固定骰子状态
+    elif player == 2:
+        player2_lock = player_dices[1]
+        player1_lock = player_dices[0]
+        del player_dices[0:2]
+        for i in range(1, free_dice_number + 1):
+            if i in choose_dice:
+                player2_lock.append(each_dice_point[i - 1])
+        player2_lock.sort()
+        player_dices.append(player1_lock)
+        player_dices.append(player2_lock)  # 更新两方目前的固定骰子状态
+
+    print(player_dices)
+    free_dice_number -= len(choose_dice)
+    return free_dice_number  # 每次更新能投掷的骰子
+
+
+def game_round(round, free_dice_number1, free_dice_number2):
+    global rate
+    global player_dices
+    print('现在是第'+str(round)+'轮投掷')
+    if round != 3:
+        free_dice_number1 = lock_dice(free_dice_number1, 1)
+        free_dice_number2 = lock_dice(free_dice_number2, 2)
+        rate_rise(round, 1)
+        rate_rise(round, 2)
+        print('当前倍率'+str(rate))
+        round += 1
+        game_round(round, free_dice_number1, free_dice_number2)
+    else:  # 第三轮不需要锁定
+        each_dice_point1 = roll_dice(free_dice_number1)
+        each_dice_point2 = roll_dice(free_dice_number2)
+        player1_score = player_dices[0]
+        player2_score = player_dices[1]
+        for i in range(1, len(each_dice_point1)+1):
+            player1_score.append(each_dice_point1[i-1])
+        for i in range(1, len(each_dice_point2)+1):
+            player2_score.append(each_dice_point2[i-1])
+        del player_dices[0:2]
+        player1_score.sort()
+        player2_score.sort()
+        player_dices.append(player1_score)
+        player_dices.append(player2_score)
+        print(player_dices)
+        score_calculate(1)
+        score_calculate(2)
+
+
+def rate_rise(round, player):
+    global rate
+    if round != 3:
+        print('玩家'+str(player)+'请输入你想增加的倍率(0,1,2,3)')
+        rate += int(input())
+
+
+def score_calculate(player):
+    global player_dices
+    global rate
+    score = 0
+    bonus = []
+    dice_point = player_dices[player - 1]
+    for i in dice_point:
+        score += i
+    one = int(dice_point.count(1))
+    two = int(dice_point.count(2))
+    three = int(dice_point.count(3))
+    four = int(dice_point.count(4))
+    five = int(dice_point.count(5))
+    six = int(dice_point.count(6))
+    bonus.append(double_double(one, two, three, four, five, six))
+    bonus.append(triple(one, two, three, four, five, six))
+    bonus.append(hulu(one, two, three, four, five, six))
+    bonus.append(quadruple(one, two, three, four, five, six))
+    bonus.append(quintuple(one, two, three, four, five, six))
+    bonus.append(smallsequence(one, two, three, four, five, six))
+    bonus.append(bigsequence(one, two, three, four, five, six))
+    for i in bonus:
+        score += i
+    print('玩家'+str(player)+'的分数是：'+str(score*rate))
+    return score
+
+
+def double_double(one, two, three, four, five, six):
+    if one == 2:
+        if two == 2 or three == 2 or four == 2 or five == 2 or six == 2:
+            return 10
+    elif two == 2:
+        if three == 2 or four == 2 or five == 2 or six == 2:
+            return 10
+    elif three == 2:
+        if four == 2 or five == 2 or six == 2:
+            return 10
+    elif four == 2:
+        if five == 2 or six == 2:
+            return 10
+    elif five == 2:
+        if six == 2:
+            return 10
+    else:
+        return 0
+
+        
+def triple(one, two, three, four, five, six):
+    if one == 3:
+        if two == 1 or three == 1 or four == 1 or five == 1 or six == 1:
+            return 10
+    elif two == 3:
+        if one == 1 or three == 1 or four == 1 or five == 1 or six == 1:
+            return 10
+    elif three == 3:
+        if two == 1 or one == 1 or four == 1 or five == 1 or six == 1:
+            return 10
+    elif four == 3:
+        if two == 1 or three == 1 or one == 1 or five == 1 or six == 1:
+            return 10
+    elif five == 3:
+        if two == 1 or three == 1 or four == 1 or one == 1 or six == 1:
+            return 10
+    elif five == 3:
+        if two == 1 or three == 1 or four == 1 or five == 1 or one == 1:
+            return 10
+    else:
+        return 0
+
+
+def hulu(one, two, three, four, five, six):
+    if one == 3:
+        if two == 2 or three == 2 or four == 2 or five == 2 or six == 2:
+            return 20
+    elif two == 3:
+        if one == 2 or three == 2 or four == 2 or five == 2 or six == 2:
+            return 20
+    elif three == 3:
+        if two == 2 or one == 2 or four == 2 or five == 2 or six == 2:
+            return 20
+    elif four == 3:
+        if two == 2 or three == 2 or one == 2 or five == 2 or six == 2:
+            return 20
+    elif five == 3:
+        if two == 2 or three == 2 or four == 2 or one == 2 or six == 2:
+            return 20
+    elif five == 3:
+        if two == 2 or three == 2 or four == 2 or five == 2 or one == 2:
+            return 20
+    else:
+        return 0
+
+
+def quadruple(one, two, three, four, five, six):
+    if one == 4 or two == 4 or three == 4 or four == 4 or five == 4 or six == 4:
+        return 40
+    else:
+        return 0
+    
+
+def quintuple(one, two, three, four, five, six):
+    if one == 5 or two == 5 or three == 5 or four == 5 or five == 5 or six == 5:
+        return 100
+    else:
+        return 0
+
+
+def smallsequence(one, two, three, four, five, six):
+    if one != 0 and two != 0 and three != 0 and four != 0 and five == 0:  # 1 2 3 4 -5
+        return 30
+    elif one == 0 and two != 0 and three != 0 and four != 0 and five != 0 and six == 0:  # 2 3 4 5 -1 -6
+        return 30
+    elif two == 0 and three != 0 and four != 0 and five != 0 and six != 0:  # 3 4 5 6 -2
+        return 30
+    else:
+        return 0
+
+
+def bigsequence(one, two, three, four, five, six):
+    if one != 0 and two != 0 and three != 0 and four != 0 and five != 0:  # 1 2 3 4 5
+        return 60
+    elif two != 0 and three != 0 and four != 0 and five != 0 and six != 0:  # 2 3 4 5 6
+        return 60
+    else:
+        return 0
+
+
+def check_win(player1, player2, rate):
+    if (player1-player2) < 0:
+        print('游戏结束')
+    elif player1 > player2:
+        print('玩家1获胜')
+    else:
+        print('玩家2获胜')
+
+
+def main():
+    game_round(1, 5, 5)
+
+
+if __name__ == "__main__":
+    main()
