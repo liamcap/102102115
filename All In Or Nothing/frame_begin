@@ -2,7 +2,8 @@ from random import randint
 
 player_dices = [[], []]
 rate = 1
-
+play1_money = 0
+play2_money = 0
 
 def dice():
     point = randint(1, 6)
@@ -17,7 +18,7 @@ def roll_dice(i):
     return score
 
 
-def lock_dice(free_dice_number, player):
+def lock_dice(free_dice_number, player):  # free_dice_number手中还有几个没锁定的骰子
     global player_dices
     each_dice_point = roll_dice(free_dice_number)
     print('玩家'+str(player)+'回合')
@@ -45,8 +46,7 @@ def lock_dice(free_dice_number, player):
         player2_lock.sort()
         player_dices.append(player1_lock)
         player_dices.append(player2_lock)  # 更新两方目前的固定骰子状态
-
-    print(player_dices)
+    print('双方的锁定区为:', player_dices)
     free_dice_number -= len(choose_dice)
     return free_dice_number  # 每次更新能投掷的骰子
 
@@ -54,13 +54,14 @@ def lock_dice(free_dice_number, player):
 def game_round(round, free_dice_number1, free_dice_number2):
     global rate
     global player_dices
+    print('\n')
     print('现在是第'+str(round)+'轮投掷')
     if round != 3:
         free_dice_number1 = lock_dice(free_dice_number1, 1)
         free_dice_number2 = lock_dice(free_dice_number2, 2)
         rate_rise(round, 1)
         rate_rise(round, 2)
-        print('当前倍率'+str(rate))
+        print('当前场上的倍率为:'+str(rate))
         round += 1
         game_round(round, free_dice_number1, free_dice_number2)
     else:  # 第三轮不需要锁定
@@ -78,8 +79,10 @@ def game_round(round, free_dice_number1, free_dice_number2):
         player_dices.append(player1_score)
         player_dices.append(player2_score)
         print(player_dices)
-        score_calculate(1)
-        score_calculate(2)
+        score1 = score_calculate(1)
+        score2 = score_calculate(2)
+        print('当前场上的倍率是' + str(rate))
+        redistribute(score1, score2)
 
 
 def rate_rise(round, player):
@@ -91,28 +94,27 @@ def rate_rise(round, player):
 
 def score_calculate(player):
     global player_dices
-    global rate
     score = 0
     bonus = []
     dice_point = player_dices[player - 1]
     for i in dice_point:
         score += i
-    one = int(dice_point.count(1))
+    one = int(dice_point.count(1))  # 统计骰子中每个数字的个数
     two = int(dice_point.count(2))
     three = int(dice_point.count(3))
     four = int(dice_point.count(4))
     five = int(dice_point.count(5))
     six = int(dice_point.count(6))
-    bonus.append(double_double(one, two, three, four, five, six))
-    bonus.append(triple(one, two, three, four, five, six))
-    bonus.append(hulu(one, two, three, four, five, six))
-    bonus.append(quadruple(one, two, three, four, five, six))
-    bonus.append(quintuple(one, two, three, four, five, six))
-    bonus.append(smallsequence(one, two, three, four, five, six))
-    bonus.append(bigsequence(one, two, three, four, five, six))
+    bonus.append(double_double(one, two, three, four, five, six) or 0)  # 判断是否有bonus
+    bonus.append(triple(one, two, three, four, five, six) or 0)
+    bonus.append(hulu(one, two, three, four, five, six) or 0)
+    bonus.append(quadruple(one, two, three, four, five, six) or 0)
+    bonus.append(quintuple(one, two, three, four, five, six) or 0)
+    bonus.append(small_sequence(one, two, three, four, five, six) or 0)
+    bonus.append(big_sequence(one, two, three, four, five, six) or 0)
     for i in bonus:
         score += i
-    print('玩家'+str(player)+'的分数是：'+str(score*rate))
+    print('玩家'+str(player)+'的分数是：'+str(score))
     return score
 
 
@@ -135,7 +137,7 @@ def double_double(one, two, three, four, five, six):
     else:
         return 0
 
-        
+
 def triple(one, two, three, four, five, six):
     if one == 3:
         if two == 1 or three == 1 or four == 1 or five == 1 or six == 1:
@@ -196,7 +198,7 @@ def quintuple(one, two, three, four, five, six):
         return 0
 
 
-def smallsequence(one, two, three, four, five, six):
+def small_sequence(one, two, three, four, five, six):
     if one != 0 and two != 0 and three != 0 and four != 0 and five == 0:  # 1 2 3 4 -5
         return 30
     elif one == 0 and two != 0 and three != 0 and four != 0 and five != 0 and six == 0:  # 2 3 4 5 -1 -6
@@ -207,7 +209,7 @@ def smallsequence(one, two, three, four, five, six):
         return 0
 
 
-def bigsequence(one, two, three, four, five, six):
+def big_sequence(one, two, three, four, five, six):
     if one != 0 and two != 0 and three != 0 and four != 0 and five != 0:  # 1 2 3 4 5
         return 60
     elif two != 0 and three != 0 and four != 0 and five != 0 and six != 0:  # 2 3 4 5 6
@@ -216,17 +218,56 @@ def bigsequence(one, two, three, four, five, six):
         return 0
 
 
-def check_win(player1, player2, rate):
-    if (player1-player2) < 0:
-        print('游戏结束')
-    elif player1 > player2:
-        print('玩家1获胜')
+def redistribute(play1_score, player2_score):
+    global rate
+    global play1_money
+    global play2_money
+    if play1_score > player2_score:
+        change = abs(play1_score-player2_score) * rate
+        print('玩家1获得' + str(change) + '筹码')
+        play1_money += change
+        play2_money -= change
+        print('玩家1筹码为:' + str(play1_money) + ',玩家2筹码为:' + str(play2_money))
+    elif play1_score < player2_score:
+        change = abs(play1_score - player2_score) * rate
+        print('玩家2获得' + str(change) + '筹码')
+        play2_money += change
+        play1_money -= change
+        print('玩家1筹码为:' + str(play1_money) + ',玩家2筹码为:' + str(play2_money))
     else:
+        print('分数相同，双方筹码不变')
+
+
+def check_win(money1, money2):
+    if money1 > money2 > 0:
+        print('玩家1获胜')
+    elif 0 < money1 < money2:
         print('玩家2获胜')
+    elif money1 == money2 and money1 > 0 and money2 > 0:
+        print('平局')
 
 
 def main():
-    game_round(1, 5, 5)
+    print('请输入对战局数:')
+    gamenum = int(input())
+    print('请输入双方初始筹码:')
+    global play1_money
+    global play2_money
+    global player_dices
+    global rate
+    play1_money = int(input())
+    play2_money = play1_money
+    for i in range(gamenum):
+        player_dices = [[], []]
+        rate = 1
+        game_round(1, 5, 5)
+        if play1_money < 0:
+            print('由于玩家1筹码用尽，玩家2胜利，游戏结束')
+            break
+        elif play2_money < 0:
+            print('由于玩家2筹码用尽，玩家1胜利，游戏结束')
+            break
+    check_win(play1_money, play2_money)
 
 
 if __name__ == "__main__":
