@@ -2,9 +2,9 @@ import random
 
 
 class Player:
-    def __init__(self, name, chips):
+    def __init__(self, name, initial_money):
         self.name = name
-        self.chips = chips
+        self.money = initial_money
         self.free_dice_number = 5
         self.locked_dices = []
         self.dices = [0] * self.free_dice_number
@@ -33,25 +33,52 @@ class Player:
     def get_locked_dices(self):
         return self.locked_dices
 
+    def reset_locked_dice(self):
+        self.locked_dices = []
+
     def reset_dices(self):
         self.dices = [0] * self.free_dice_number
 
+    def score_calculate(self):
+        bonus = []
+        for i in self.get_locked_dices():
+            self.score += i
+        one = int(self.get_locked_dices().count(1))  # 统计骰子中每个数字的个数
+        two = int(self.get_locked_dices().count(2))
+        three = int(self.get_locked_dices().count(3))
+        four = int(self.get_locked_dices().count(4))
+        five = int(self.get_locked_dices().count(5))
+        six = int(self.get_locked_dices().count(6))
+        bonus.append(double_double(one, two, three, four, five, six) or 0)  # 判断是否有bonus
+        bonus.append(triple(one, two, three, four, five, six) or 0)
+        bonus.append(hulu(one, two, three, four, five, six) or 0)
+        bonus.append(quadruple(one, two, three, four, five, six) or 0)
+        bonus.append(quintuple(one, two, three, four, five, six) or 0)
+        bonus.append(small_sequence(one, two, three, four, five, six) or 0)
+        bonus.append(big_sequence(one, two, three, four, five, six) or 0)
+        for i in bonus:
+            self.score += i
+        return self.score
 
-def play_game(num_rounds, initial_chips):
+
+def play_game(num_rounds, initial_money):
     num_players = int(input("请输入玩家数量："))
     players = []
     for i in range(num_players):
         name = input("请输入玩家{}的名称：".format(i + 1))
-        player = Player(name, initial_chips)
+        player = Player(name, initial_money)
         players.append(player)
 
     total_rounds = 0
     while total_rounds < num_rounds:
+        rate = 1
         total_rounds += 1
         print("\n第{}局游戏开始！".format(total_rounds))
-        for player in players:  # 每局开始初始化骰子
+        for player in players:  # 每局开始初始化骰子，固定骰子以及分数
             player.free_dice_number = 5
             player.reset_dices()
+            player.score = 0
+            player.reset_locked_dice()
 
         for i in range(2):  # 每局的前两轮投掷
             print("\n第{}轮投掷开始：".format(i + 1))
@@ -59,7 +86,7 @@ def play_game(num_rounds, initial_chips):
                 player.reset_dices()
                 player.roll_dice()
                 print("{}的骰子结果：{}".format(player.name, player.show_dices()))
-            print("\n{}轮投掷结束".format(i + 1))
+            print("第{}轮投掷结束\n".format(i + 1))
 
             for player in players:
 
@@ -81,57 +108,180 @@ def play_game(num_rounds, initial_chips):
                         print("错误：请输入有效的骰子索引")
                 player.lock_dice(indices)
                 print("{}锁定的骰子：{}".format(player.name, player.get_locked_dices()))
-                print("{}自由骰子数：{}".format(player.name, player.free_dice_number))
-            print('\n')
+                rate += int(input("请输入{}要增加的倍率：".format(player.name)))
+                print('现在场上的倍率是{}\n'.format(rate))
+                # print("{}自由骰子数：{}".format(player.name, player.free_dice_number))
 
-        print("\n第3轮投掷开始：")
+        print("第3轮投掷开始：")
         for player in players:
             player.reset_dices()
             player.roll_dice()
-            print("{}的最终骰子结果：{}".format(player.name, player.show_dices()))
+            print("\n{}的最终骰子结果：{}".format(player.name, player.show_dices()))
             for i in range(player.free_dice_number):
                 player.locked_dices.append(player.dices[i])
             player.get_locked_dices().sort()
-            print("{}的最终骰子结果：{}".format(player.name, player.get_locked_dices()))
 
-    #     scores = {}
-    #     for player in players:
-    #         score = sum(player.get_locked_dices())
-    #         bonus = random.randint(1, 6)
-    #         score += bonus
-    #         scores[player.name] = score
-    #         print("{}的得分：{}（骰子点数总和：{}，奖励分：{}）".format(player.name, score, sum(player.get_locked_dices()), bonus))
-    #
-    #     max_score = max(scores.values())
-    #     winners = [player for player, score in scores.items() if score == max_score]
-    #
-    #     if len(winners) == 1:
-    #         winner = winners[0]
-    #         print("\n{}获胜！".format(winner))
-    #         for player in players:
-    #             if player.name != winner:
-    #                 diff = abs(scores[player.name] - scores[winner])
-    #                 chips_to_lose = diff * random.randint(0, 3)
-    #                 player.chips -= chips_to_lose
-    #                 print("{}输给了{}筹码".format(player.name, chips_to_lose))
-    #     else:
-    #         print("\n平局，无人获胜！")
-    #
-    #     players = [player for player in players if player.chips > 0]
-    #
-    #     if len(players) <= 1:
-    #         break
-    #
-    # print("\n游戏结束！")
-    # if len(players) == 0:
-    #     print("没有玩家剩余筹码，游戏结束。")
-    # elif len(players) == 1:
-    #     print("{}获胜！".format(players[0].name))
-    # else:
-    #     print("平局，无人获胜！")
-    #
+        scores = {}  # 存储所有玩家的分数
+
+        for player in players:
+            print("{}的最终骰子结果：{}".format(player.name, player.get_locked_dices()))
+            player.score = player.score_calculate()
+            scores[player.name] = player.score
+            print("{}的分数为：{}".format(player.name, player.score))
+
+        max_score = max(scores.values())
+        print("最高分是{}".format(max_score))
+        is_winner = []  # 存储winner
+        not_winners = []  # 存储非winner
+        winners_name = []  # 存储winner名字
+        for player in players:
+            if player.score == max_score:
+                is_winner.append(player)
+                winners_name.append(player.name)
+        for player in players:
+            if player not in is_winner:
+                not_winners.append(player)
+        # print("胜利者有{}个".format(len(is_winner)))
+        if len(is_winner) < len(players):
+            print("\n第{}局游戏{}获胜！".format(total_rounds, winners_name))
+            for player in players:
+                if player not in is_winner:
+                    for winner in is_winner:
+                        change = abs(scores[player.name] - scores[winner.name]) * rate
+                        player.money -= change
+                        winner.money += change
+                        print("{}输给了{}，并交出了{}筹码".format(player.name, winner.name, change))
+        elif len(is_winner) == len(players):
+            print("\n平局，本局无人获胜，筹码无变动。")
+
+        for player in players:
+            print("目前玩家{}的筹码为{}".format(player.name, player.money))
+
+        brokers_name = []  # 存储筹码小于0的玩家名字
+        for player in players:
+            if player.money < 0:
+                brokers_name.append(player.name)
+        if len(brokers_name) > 0:
+            print("由于玩家{}筹码用尽，玩家{}获得最终胜利".format(brokers_name, winners_name))
+            break
+
+        print("第{}局游戏结束".format(total_rounds))
+
+    print("\n进入最终结算环节：")
+    for player in players:
+        print("最终玩家{}的筹码为{}".format(player.name, player.money))
+    moneys = {}  # 存储所有玩家的筹码
+    last_winner = []
+    for player in players:
+        moneys[player.name] = player.money
+    max_money = max(moneys.values())
+    print("最高筹码是{}".format(max_money))
+    for player in players:
+        if player.money == max_money:
+            last_winner.append(player.name)
+    print("最终的胜利者是{}".format(last_winner))
+
+
+def double_double(one, two, three, four, five, six):
+    if one == 2:
+        if two == 2 or three == 2 or four == 2 or five == 2 or six == 2:
+            return 10
+    elif two == 2:
+        if three == 2 or four == 2 or five == 2 or six == 2:
+            return 10
+    elif three == 2:
+        if four == 2 or five == 2 or six == 2:
+            return 10
+    elif four == 2:
+        if five == 2 or six == 2:
+            return 10
+    elif five == 2:
+        if six == 2:
+            return 10
+    else:
+        return 0
+
+
+def triple(one, two, three, four, five, six):
+    if one == 3:
+        if two == 1 or three == 1 or four == 1 or five == 1 or six == 1:
+            return 10
+    elif two == 3:
+        if one == 1 or three == 1 or four == 1 or five == 1 or six == 1:
+            return 10
+    elif three == 3:
+        if two == 1 or one == 1 or four == 1 or five == 1 or six == 1:
+            return 10
+    elif four == 3:
+        if two == 1 or three == 1 or one == 1 or five == 1 or six == 1:
+            return 10
+    elif five == 3:
+        if two == 1 or three == 1 or four == 1 or one == 1 or six == 1:
+            return 10
+    elif five == 3:
+        if two == 1 or three == 1 or four == 1 or five == 1 or one == 1:
+            return 10
+    else:
+        return 0
+
+
+def hulu(one, two, three, four, five, six):
+    if one == 3:
+        if two == 2 or three == 2 or four == 2 or five == 2 or six == 2:
+            return 20
+    elif two == 3:
+        if one == 2 or three == 2 or four == 2 or five == 2 or six == 2:
+            return 20
+    elif three == 3:
+        if two == 2 or one == 2 or four == 2 or five == 2 or six == 2:
+            return 20
+    elif four == 3:
+        if two == 2 or three == 2 or one == 2 or five == 2 or six == 2:
+            return 20
+    elif five == 3:
+        if two == 2 or three == 2 or four == 2 or one == 2 or six == 2:
+            return 20
+    elif five == 3:
+        if two == 2 or three == 2 or four == 2 or five == 2 or one == 2:
+            return 20
+    else:
+        return 0
+
+
+def quadruple(one, two, three, four, five, six):
+    if one == 4 or two == 4 or three == 4 or four == 4 or five == 4 or six == 4:
+        return 40
+    else:
+        return 0
+
+
+def quintuple(one, two, three, four, five, six):
+    if one == 5 or two == 5 or three == 5 or four == 5 or five == 5 or six == 5:
+        return 100
+    else:
+        return 0
+
+
+def small_sequence(one, two, three, four, five, six):
+    if one != 0 and two != 0 and three != 0 and four != 0 and five == 0:  # 1 2 3 4 -5
+        return 30
+    elif one == 0 and two != 0 and three != 0 and four != 0 and five != 0 and six == 0:  # 2 3 4 5 -1 -6
+        return 30
+    elif two == 0 and three != 0 and four != 0 and five != 0 and six != 0:  # 3 4 5 6 -2
+        return 30
+    else:
+        return 0
+
+
+def big_sequence(one, two, three, four, five, six):
+    if one != 0 and two != 0 and three != 0 and four != 0 and five != 0:  # 1 2 3 4 5
+        return 60
+    elif two != 0 and three != 0 and four != 0 and five != 0 and six != 0:  # 2 3 4 5 6
+        return 60
+    else:
+        return 0
 
 
 game_round = int(input("请输入游戏局数："))
-chips = int(input("请输入每位玩家初始筹码："))
-play_game(game_round, chips)  
+money = int(input("请输入每位玩家初始筹码："))
+play_game(game_round, money)
