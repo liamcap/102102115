@@ -305,4 +305,59 @@ function main() {
   playGame(gameRound, money);
 }
 
+var diceElements = document.getElementsByClassName("dice");
+var diceImages = [...document.querySelectorAll(".dice img")];
+var rollButton = document.getElementById("btn");
+
+// 初始化骰子状态和倍率
+var diceLocked = [false, false, false, false, false];
+var currentMultiplier = 1;
+
+// 随机生成一个骰子点数
+function rollDice() {
+  var points = [];
+  for (var i = 0; i < 5; i++) {
+    if (!diceLocked[i]) {
+      var point = Math.floor(Math.random() * 6) + 1;
+      points.push(point);
+    } else {
+      points.push(Number(diceImages[i].src.slice(-5, -4)));
+    }
+  }
+  return points;
+}
+
+// 更新骰子图片
+function updateDiceImages(points) {
+  for (var i = 0; i < 5; i++) {
+    diceImages[i].src = "./img/" + points[i] + ".png";
+  }
+}
+
+// 绑定按钮点击事件
+rollButton.addEventListener("click", function () {
+  var points = rollDice();
+  updateDiceImages(points);
+});
+
+// 绑定骰子锁定/解锁事件
+for (var i = 0; i < 5; i++) {
+  diceElements[i].addEventListener("click", function (event) {
+    var index = [...diceElements].indexOf(event.currentTarget);
+    diceLocked[index] = !diceLocked[index];
+    event.currentTarget.classList.toggle("locked");
+  });
+}
+ 
+// 绑定加倍按钮点击事件
+var multiplierButtons = document.querySelectorAll("#jiabei0, #jiabei1, #jiabei2, #jiabei3");
+multiplierButtons.forEach(function (button, index) {
+  button.addEventListener("click", function () {
+    currentMultiplier = index;
+    // 更新当前倍率显示
+    document.querySelector(".duiju .item:nth-child(4)").textContent = "当前倍率：" + index;
+  });
+});
+
+
 main();
