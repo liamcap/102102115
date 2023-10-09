@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>投骰子</title>
+    <link rel="stylesheet" href="界面.css" />
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+  </head>
+
+  <body>
+    <!-- 开始界面 -->
+    <div class="start">
+      <div class="ai">
+        <button class="n1">简单</button>
+        <button class="n2">普通</button>
+        <button class="n3">困难</button>
+        <button class="n4">噩梦</button>
+        <button class="starting">开始游戏</button>
+      </div>
+      <div class="vs">
+        对局数量：<br />
+        <input class="vs0" type="text" name="nub" value="3" />
+        <br />
+        初始筹码：<br />
+        <input class="vs0" type="text" name="money" value="1000" />
+        <br />
+        初始倍率()：<br />
+        <input class="vs0" type="text" name="beil" value="1" />
+        <br />
+        <button class="starting">开始游戏</button>
+      </div>
+      <div class="renji">
+        <button class="starting">开始游戏</button>
+      </div>
+    </div>
+    <!-- 对局状态 -->
+    <div class="duiju">
+      <div class="item1">
+        <button id="caid">菜单</button>
+        <div class="cd">
+          <button id="addplayer" onclick="appendText()">添加玩家</button>
+          <button id="removeplayer" onclick="remove()">减少玩家</button>
+          <button
+            id="remake"
+            onclick="{ if(confirm('确定跳转？'))location.href='file:///E:/作业/大三/dataproject/RollTheDice/%E7%95%8C%E9%9D%A2.html'}"
+          >
+            刷新一下
+          </button>
+        </div>
+      </div>
+      <div class="item">当前轮数</div>
+      <div class="item">当前局数</div>
+      <div class="item">当前倍率</div>
+    </div>
+
+    <!-- 骰子区域 -->
+    <div class="touzi">
+      <div class="dice">
+        <img id="img1" src="./img/1.png" width="200px" height="200px" />
+      </div>
+      <div class="dice">
+        <img id="img2" src="./img/1.png" width="200px" height="200px" />
+      </div>
+      <div class="dice">
+        <img id="img3" src="./img/1.png" width="200px" height="200px" />
+      </div>
+      <div class="dice">
+        <img id="img4" src="./img/1.png" width="200px" height="200px" />
+      </div>
+      <div class="dice">
+        <img id="img5" src="./img/1.png" width="200px" height="200px" />
+      </div>
+      <button id="btn">摇骰子</button>
+      <!-- 投骰子的按钮 -->
+      <button id="nextmove">下一步</button>
+      <button id="bg">开始</button>
+    </div>
+    <div class="clear"></div>
+    <button id="jiabei0">不加倍</button>
+    <button id="jiabei1">加倍</button>
+    <button id="jiabei2">两倍</button>
+    <button id="jiabei3">三倍</button>
+
+    <!-- 玩家情况区域 -->
+    <div class="player"></div>
+
+    <script src="game.js"></script>
+    <!-- <script src="animation.js"></script> -->
+    <!-- <script src="Player.js"></script> -->
+    <!-- <script src="ai.js"></script> -->
+    <!-- <script src="main.js"></script> -->
+  </body>
+</html>
