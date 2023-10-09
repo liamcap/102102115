@@ -36,7 +36,13 @@ class Player {
   }
 
   resetLockedDice() {
-    this.lockedDices = [false, false, false, false, false];
+    for (let i = 0; i < 5; i++) {
+      Object.defineProperty(this.lockedDices, i, {
+        writable: true,
+      });
+      this.lockedDices[i] = false;
+    }
+    // this.lockedDices = [false, false, false, false, false];
   }
 
   resetDices() {
@@ -74,14 +80,6 @@ class Player {
 var multiplierButtons = document.querySelectorAll(
   "#jiabei0, #jiabei1, #jiabei2, #jiabei3"
 );
-multiplierButtons.forEach(function (button, index) {
-  button.addEventListener("click", function () {
-    currentMultiplier = index;
-    // 更新当前倍率显示
-    document.querySelector(".duiju .item:nth-child(4)").textContent =
-      "当前倍率：" + index;
-  });
-});
 
 // 随机生成一个骰子点数
 function rollDice(lockdices) {
@@ -236,14 +234,16 @@ function smallSequence(counts) {
     counts[3] !== 0 &&
     counts[4] !== 0 &&
     counts[5] !== 0 &&
-    counts[6] === 0
+    counts[6] === 0 &&
+    counts[1] === 0
   ) {
     return 30;
   } else if (
     counts[3] !== 0 &&
     counts[4] !== 0 &&
     counts[5] !== 0 &&
-    counts[6] !== 0
+    counts[6] !== 0 &&
+    counts[2] === 0
   ) {
     return 30;
   } else {
@@ -274,20 +274,27 @@ function bigSequence(counts) {
 }
 
 function playGame(numRounds, initialMoney) {
-  let totalRounds = 1; //当前轮数
-  let nowround = 0; //当前局数
+  var totalRounds = 1; //当前轮数
+  var nowround = 1; //当前局数
   nextmove.disabled = true; //开局无法点击
   bg.addEventListener("click", function () {
     //每轮游戏开始初始化按钮
     alert("游戏开始！");
-    if (totalRounds === 1) {
+    currentMultiplier = 1;
+    totalRounds = 1;
+    document.querySelector(".duiju .item:nth-child(4)").textContent =
+      "当前倍率：" + "1";
+    if (nowround < numRounds) {
       //第一轮游戏开始
-      for (let i = 0; i < numPlayers; i++) {
-        const name = "玩家" + String(i + 1);
-        const player = new Player(name, initialMoney);
-        // console.log(player.name);
-        // alert(`${totalRounds},${player.name}`);
-        players.push(player);
+      if (nowround === 1) {
+        //第一局游戏初始化加入玩家
+        for (let i = 0; i < numPlayers; i++) {
+          const name = "玩家" + String(i + 1);
+          const player = new Player(name, initialMoney);
+          // console.log(player.name);
+          // alert(`${totalRounds},${player.name}`);
+          players.push(player);
+        }
       }
 
       for (const player of players) {
@@ -298,6 +305,10 @@ function playGame(numRounds, initialMoney) {
         player.resetLockedDice();
         // alert(`${player.name}的骰子${player.dices},${player.lockedDices}`);
       }
+      //每局开始初始化图片
+      let points = [1, 1, 1, 1, 1];
+      let lockdices = [false, false, false, false, false];
+      updateDiceImages(points, lockdices);
       bg.disabled = true;
       bg.style.display = "none";
     }
@@ -305,6 +316,7 @@ function playGame(numRounds, initialMoney) {
 
   var playernow = 0; // 当前正在进行的玩家是哪位
   var isRollButtonClick = false;
+
   rollButton.addEventListener("click", function () {
     let points = rollDice(players[playernow].lockedDices);
     let lockdices = players[playernow].lockedDices;
@@ -314,14 +326,28 @@ function playGame(numRounds, initialMoney) {
     rollButton.disabled = true; //每轮只能投掷一次
     nextmove.disabled = false; //投掷完才能进行下一轮
     isRollButtonClick = true;
+    if (totalRounds === 3) {
+      //第三轮
+      for (let i = 0; i < 5; i++) {
+        //确定完后锁定的骰子无法再改变
+        if (!players[playernow].lockedDices[i]) {
+          players[playernow].lockedDices[i] =
+            !players[playernow].lockedDices[i];
+        }
+      }
+      updateDiceImages(
+        players[playernow].dices,
+        players[playernow].lockedDices
+      );
+    }
   });
 
   //绑定骰子锁定解锁事件
-  //当投掷完后才能锁定
+  //当投掷完后才能锁定,第三轮投掷完直接锁定
   diceElements[1].disabled = true;
   for (let i = 0; i < 5; i++) {
     diceElements[i].addEventListener("click", function (event) {
-      if (isRollButtonClick) {
+      if (isRollButtonClick && totalRounds < 3) {
         //&& !players[playernow].lockedDices[i]
         var index = [...diceElements].indexOf(event.currentTarget);
         players[playernow].lockedDices[index] =
@@ -335,13 +361,30 @@ function playGame(numRounds, initialMoney) {
     });
   }
 
+  var originrate;
+  multiplierButtons.forEach(function (button, index) {
+    button.addEventListener("click", function () {
+      originrate = currentMultiplier;
+      if (isRollButtonClick && totalRounds < 3) {
+        originrate += index;
+        // 更新当前倍率显示
+        document.querySelector(".duiju .item:nth-child(4)").textContent =
+          "当前倍率：" + originrate;
+        // button.disabled = true;
+        // button.style.display = "none";
+      }
+    });
+  });
+
   nextmove.addEventListener("click", function () {
+    currentMultiplier = originrate;
     players[playernow].score = players[playernow].scoreCalculate();
     alert(
       `${players[playernow].name}锁好了,他的分数是${players[playernow].score}`
     );
-
+    players[playernow].score = 0;
     for (let i = 0; i < 5; i++) {
+      //确定完后锁定的骰子无法再改变
       if (players[playernow].lockedDices[i]) {
         Object.defineProperty(players[playernow].lockedDices, i, {
           writable: false,
@@ -349,25 +392,23 @@ function playGame(numRounds, initialMoney) {
       }
     }
 
-    // alert(`${players[playernow].lockedDices}`);
     playernow++;
-    if (playernow === players.length) {
+    if (playernow === players.length && totalRounds < 3) {
+      //1,2轮
       totalRounds++;
-      alert(`现在是第${totalRounds}轮`);
+      alert(`现在开始第${totalRounds}轮`);
       playernow = 0;
     }
-
+    if (playernow === players.length && totalRounds === 3) {
+      bg.disabled = false;
+      bg.style.display = "block";
+      nowround += 1;
+    }
     updateDiceImages(players[playernow].dices, players[playernow].lockedDices); //更新到下一位玩家的骰子
     rollButton.disabled = false; //下一次玩家能投掷
     nextmove.disabled = true;
     isRollButtonClick = false;
   });
-
-  // jiabei0.addEventListener("click", function () {
-  //   for (let player of players) {
-  //     alert(`${player.name}, ${player.dices}`);
-  //   }
-  // });
 }
 
 playGame(3, 1000);
