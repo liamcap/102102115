@@ -5,8 +5,8 @@ var bg = document.getElementById("bg");
 var nextmove = document.getElementById("nextmove");
 var jiabei0 = document.getElementById("jiabei0");
 var jiabei1 = document.getElementById("jiabei1");
-var jiebie2 = document.getElementById("jiabei2");
-var jiebei3 = document.getElementById("jiabei3");
+var jiabei2 = document.getElementById("jiabei2");
+var jiabei3 = document.getElementById("jiabei3");
 
 var numPlayers = 0;
 var players = [];
@@ -120,15 +120,24 @@ function updateDiceImages(points, lockedDices) {
 
 // 封面
 $(document).ready(function () {
-  $(".starting").click(function () {
+  $(".starting1").click(function () {
     $(".start").fadeOut(20);
+    playGame(3, 1000, 1);
   });
 });
-// $(document).ready(function () {
-//   $(".starting2").click(function () {
-//     $(".start").fadeOut(20);
-//   });
-// });
+$(document).ready(function () {
+  $(".starting2").click(function () {
+    $(".start").fadeOut(20);
+    ksyx();
+    playGame(zongjushu, chushiqian, chushibeilv);
+  });
+});
+$(document).ready(function () {
+  $(".starting3").click(function () {
+    $(".start").fadeOut(20);
+    playGame(3, 1000, 1);
+  });
+});
 // 菜单
 $(document).ready(function () {
   $("#caid").click(function () {
@@ -285,7 +294,7 @@ function bigSequence(counts) {
   }
 }
 
-function reDistributeMoney(jushu) {
+function reDistributeMoney() {
   const scores = {};
   for (const player of players) {
     scores[player.name] = player.score;
@@ -609,8 +618,11 @@ function playGame(numRounds, initialMoney, initialRate) {
   });
 }
 
-var input = document.querySelectorAll("input");
-var zongjushu = Number(input[0].value);
-var chushiqian = Number(input[1].value);
-var chushibeilv = Number(input[2].value);
-playGame(zongjushu, chushiqian, chushibeilv);
+var zongjushu;
+var chushiqian;
+var chushibeilv;
+function ksyx() {
+  zongjushu = Number(document.querySelector('input[name="nub"]').value);
+  chushiqian = Number(document.querySelector('input[name="money"]').value);
+  chushibeilv = Number(document.querySelector('input[name="beil"]').value);
+}
