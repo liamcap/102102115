@@ -232,7 +232,7 @@ body {
   grid-template-columns: auto auto auto;
 }
 .dice {
-  border: rgba(188, 143, 143, 0.523) 10px solid;
+  /* border: rgba(188, 143, 143, 0.523) 10px solid; */
   border-radius: 8px;
   margin: 5px;
   height: 205px;
@@ -257,34 +257,24 @@ body {
 #btn:hover {
   background: rgba(118, 209, 179, 0.74);
 }
-#bg {
+#btn,
+#bg,
+#nextmove {
   position: absolute; /* 在骰子区域的绝对定位 */
-  right: 190px;
-  bottom: 120px;
-  width: 100px;
-  height: 50px;
-  background-color: #ccc;
-  border: 1px black solid;
+  right: 142px;
+  bottom: 80px;
+  width: 180px;
+  height: 80px;
+  font-size: 25px;
+  background-color: #cccccc84;
+  border: 3px rgba(131, 126, 126, 0.315) solid;
   color: black;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 10px;
   text-align: center;
 }
 #bg:hover {
   background: rgba(185, 89, 24, 0.473);
-}
-#nextmove {
-  position: absolute; /* 在骰子区域的绝对定位 */
-  right: 190px;
-  bottom: 20px;
-  width: 100px;
-  height: 50px;
-  background-color: #ccc;
-  border: 1px black solid;
-  color: black;
-  cursor: pointer;
-  border-radius: 3px;
-  text-align: center;
 }
 #nextmove:hover {
   background: rgba(90, 96, 26, 0.74);
@@ -333,7 +323,7 @@ body {
   border-radius: 5px;
 }
 /* 背景 */
-@keyframes rotate {
+/* @keyframes rotate {
   0% {
     transform: perspective(400px) rotateZ(20deg) rotateX(-40deg) rotateY(0);
   }
@@ -341,7 +331,7 @@ body {
     transform: perspective(400px) rotateZ(20deg) rotateX(-40deg)
       rotateY(-360deg);
   }
-}
+} */
 .stars {
   transform: perspective(500px);
   transform-style: preserve-3d;
@@ -360,9 +350,9 @@ body {
   left: 0;
   backface-visibility: hidden;
 }
-html,
-body {
-  background: radial-gradient(
+/* html,
+body { */
+/* background: radial-gradient(
     200% 100% at bottom center,
     #f7f7b6,
     #e96f92,
@@ -374,10 +364,27 @@ body {
     #75517d 40%,
     #e96f92 65%,
     #f7f7b6
-  );
-  background-attachment: fixed;
+  ); */
+/* background-attachment: fixed;
   overflow: hidden;
   height: 100%;
   margin: 0px;
-  padding: 0px;
+  padding: 0px; */
+
+/* } */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+video {
+  width: 150%;
+  height: 125%;
+  z-index: -100;
+  position: absolute;
+  left: -380px;
+  top: -80px;
 }
