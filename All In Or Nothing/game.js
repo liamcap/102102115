@@ -10,7 +10,6 @@ var jiebei3 = document.getElementById("jiabei3");
 
 var numPlayers = 0;
 var players = [];
-
 var currentMultiplier = 1;
 
 class Player {
@@ -21,6 +20,7 @@ class Player {
     this.lockedDices = [false, false, false, false, false];
     this.dices = Array(this.freeDiceNumber).fill(1);
     this.score = 0;
+    this.isRobot = false;
   }
 
   setDice(points) {
@@ -376,18 +376,26 @@ function checkWinner() {
   }
 }
 
-function playGame(numRounds, initialMoney) {
+function playGame(numRounds, initialMoney, initialRate) {
   var totalRounds = 1; //当前轮数
   var nowround = 1; //当前局数
   nextmove.disabled = true; //开局无法点击
   rollButton.disabled = true;
   nextmove.style.display = "none";
   rollButton.style.display = "none";
-  bg.addEventListener("click", function () {
+  jiabei0.style.display = "none";
+  jiabei1.style.display = "none";
+  jiabei2.style.display = "none";
+  jiabei3.style.display = "none";
+
+  bg.addEventListener("click", gameStart);
+
+  function gameStart() {
     //每轮游戏开始初始化按钮
     // alert(`haha:${numRounds},sda:${initialMoney}`);
     if (a > 2) {
-      currentMultiplier = 1;
+      //至少要两位玩家才能开始游戏
+      currentMultiplier = initialRate;
       totalRounds = 1;
       document.getElementById("removeplayer").disabled = true;
       document.getElementById("addplayer").disabled = true;
@@ -396,11 +404,11 @@ function playGame(numRounds, initialMoney) {
       }
       isbgclick = true;
       document.querySelector(".duiju .item:nth-child(2)").textContent =
-        "当前轮数：" + totalRounds;
+        "当前轮数：" + totalRounds + "/3";
       document.querySelector(".duiju .item:nth-child(3)").textContent =
-        "当前局数：" + nowround;
+        "当前局数：" + nowround + "/" + numRounds;
       document.querySelector(".duiju .item:nth-child(4)").textContent =
-        "当前倍率：" + 1;
+        "当前倍率：" + initialRate;
       if (nowround <= numRounds) {
         //第一轮游戏开始
         if (nowround === 1) {
@@ -430,8 +438,8 @@ function playGame(numRounds, initialMoney) {
         //每局开始初始化图片
         document.getElementById("wj1").style.color = "blue";
         rollButton.disabled = false;
-        currentMultiplier = 1;
-        originrate = 1;
+        currentMultiplier = initialRate;
+        originrate = initialRate;
         let points = [1, 1, 1, 1, 1];
         let lockdices = [false, false, false, false, false];
         updateDiceImages(points, lockdices);
@@ -445,7 +453,7 @@ function playGame(numRounds, initialMoney) {
         // alert(`cur:${currentMultiplier},ori:${originrate}`);
       }
     }
-  });
+  }
 
   var playernow = 0; // 当前正在进行的玩家是哪位
   var isRollButtonClick = false;
@@ -469,6 +477,13 @@ function playGame(numRounds, initialMoney) {
     isRollButtonClick = true;
     nextmove.style.display = "block";
     rollButton.style.display = "none";
+    if (totalRounds < 3) {
+      jiabei0.style.display = "block";
+      jiabei1.style.display = "block";
+      jiabei2.style.display = "block";
+      jiabei3.style.display = "block";
+    }
+
     if (totalRounds === 3) {
       //第三轮
       for (let i = 0; i < 5; i++) {
@@ -504,7 +519,7 @@ function playGame(numRounds, initialMoney) {
     });
   }
 
-  var originrate = 1;
+  var originrate = initialRate;
   multiplierButtons.forEach(function (button, index) {
     button.addEventListener("click", function () {
       originrate = currentMultiplier;
@@ -545,9 +560,8 @@ function playGame(numRounds, initialMoney) {
     if (playernow === players.length && totalRounds < 3) {
       //1,2轮最后一位玩家
       totalRounds++;
-      // alert(`现在开始第${totalRounds}轮`);
       document.querySelector(".duiju .item:nth-child(2)").textContent =
-        "当前轮数：" + totalRounds;
+        "当前轮数：" + totalRounds + "/3";
       for (let i = 0; i < players.length; i++) {
         let scoreid = "def" + (i + 1);
         document.getElementById(scoreid).innerHTML = "得分:" + 0;
@@ -587,15 +601,16 @@ function playGame(numRounds, initialMoney) {
     rollButton.disabled = false; //下一次玩家能投掷
     nextmove.disabled = true;
     isRollButtonClick = false;
-    // if (playernow === players.length && totalRounds === 3) {
-    //   rollButton.style.display = "none";
-    // } else {
-    //   rollButton.style.display = "block";
-    // }
     nextmove.style.display = "none";
+    jiabei0.style.display = "none";
+    jiabei1.style.display = "none";
+    jiabei2.style.display = "none";
+    jiabei3.style.display = "none";
   });
 }
+
 var input = document.querySelectorAll("input");
 var zongjushu = Number(input[0].value);
 var chushiqian = Number(input[1].value);
-playGame(zongjushu, 100);
+var chushibeilv = Number(input[2].value);
+playGame(zongjushu, chushiqian, chushibeilv);
