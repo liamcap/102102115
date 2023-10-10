@@ -1,41 +1,100 @@
+var rollButton = document.getElementById("btn");
+var diceElements = document.getElementsByClassName("dice");
+var diceImages = [...document.querySelectorAll(".dice img")];
+var bg = document.getElementById("bg");
+var nextmove = document.getElementById("nextmove");
+var jiabei0 = document.getElementById("jiabei0");
+var jiabei1 = document.getElementById("jiabei1");
+var jiabei2 = document.getElementById("jiabei2");
+var jiabei3 = document.getElementById("jiabei3");
+
+var numPlayers = 0;
+var players = [];
+var currentMultiplier = 1;
+
 class Player {
   constructor(name, initialMoney) {
     this.name = name;
     this.money = initialMoney;
     this.freeDiceNumber = 5;
-    this.lockedDices = [];
-    this.dices = Array(this.freeDiceNumber).fill(0);
+    this.lockedDices = [false, false, false, false, false];
+    this.dices = Array(this.freeDiceNumber).fill(1);
     this.score = 0;
+    this.isRobot = false;
   }
 
-  rollDice() {
-    for (let i = 0; i < this.freeDiceNumber; i++) {
-      this.dices[i] = Math.floor(Math.random() * 6) + 1;
+  autorate(totalRounds) {
+    // alert("自动加倍");
+    jiabei0.disabled = false;
+    jiabei1.disabled = false;
+    jiabei2.disabled = false;
+    jiabei3.disabled = false;
+    if (totalRounds === 1 && this.score >= 30) {
+      document.getElementById("jiabei3").click();
+    } else if (this.score >= 50) {
+      document.getElementById("jiabei3").click();
+    } else if (totalRounds === 1) {
+      let randomNum = Math.floor(Math.random() * 4);
+      let ratebutton = "jiabei" + randomNum;
+      document.getElementById(ratebutton).click();
     }
+    jiabei0.disabled = true;
+    jiabei1.disabled = true;
+    jiabei2.disabled = true;
+    jiabei3.disabled = true;
+  }
+
+  autolock() {
+    this.scoreCalculate();
+    // alert("自动锁定");
+    for (let i = 0; i < 5; i++) {
+      Object.defineProperty(this.lockedDices, i, {
+        writable: true,
+      });
+    }
+    if (this.score >= 30) {
+      for (let i = 0; i < 5; i++) {
+        diceElements[i].click();
+      }
+    } else {
+      let count = Math.floor(Math.random() * 6); // 生成0到5之间的随机数量
+      for (let i = 0; i < 5; i++) {
+        diceElements[i].disabled = false;
+      }
+      let numbers = [];
+      for (let i = 0; i < count; i++) {
+        let randomNum = Math.floor(Math.random() * 5) + 1;
+        if (!numbers.includes(randomNum)) {
+          numbers.push(randomNum);
+        }
+      }
+      for (let i of numbers) {
+        if (!this.lockedDices[i]) {
+          diceElements[i].click();
+        }
+      }
+    }
+    for (let i = 0; i < 5; i++) {
+      Object.defineProperty(this.lockedDices, i, {
+        writable: false,
+      });
+    }
+  }
+
+  autolock1() {
+    const counts = new Array(7).fill(0);
+
+    for (const dice of this.dices) {
+      counts[dice]++;
+    }
+  }
+
+  setDice(points) {
+    this.dices = points;
   }
 
   showDices() {
     return this.dices;
-  }
-
-  lockDice(indices) {
-    for (let i = 1; i <= this.freeDiceNumber; i++) {
-      if (!indices.includes(i)) {
-        this.dices[i - 1] = -1;
-      }
-    }
-
-    for (let i = 0; i < this.freeDiceNumber; i++) {
-      if (this.dices[i] != -1) {
-        this.lockedDices.push(this.dices[i]);
-      }
-    }
-    this.lockedDices.sort();
-    if (indices.length === 1 && indices[0] === -1) {
-      // pass
-    } else {
-      this.freeDiceNumber -= indices.length;
-    }
   }
 
   getLockedDices() {
@@ -43,21 +102,28 @@ class Player {
   }
 
   resetLockedDice() {
-    this.lockedDices = [];
+    for (let i = 0; i < 5; i++) {
+      Object.defineProperty(this.lockedDices, i, {
+        writable: true,
+      });
+      this.lockedDices[i] = false;
+    }
+    // this.lockedDices = [false, false, false, false, false];
   }
 
   resetDices() {
-    this.dices = Array(this.freeDiceNumber).fill(0);
+    this.dices = Array(this.freeDiceNumber).fill(1);
   }
 
   scoreCalculate() {
     const bonus = [];
-    for (const dice of this.getLockedDices()) {
+    this.score = 0;
+    for (const dice of this.dices) {
       this.score += dice;
     }
     const counts = new Array(7).fill(0);
 
-    for (const dice of this.getLockedDices()) {
+    for (const dice of this.dices) {
       counts[dice]++;
     }
 
@@ -76,242 +142,114 @@ class Player {
     return this.score;
   }
 }
-class AIPlayer extends Player {
-  constructor(name, initialMoney) {
-    super(name, initialMoney);
-  }
 
-  // 自动选择要锁定的骰子
-  autoCreateIndices() {
-    const indices = [];
-    if (this.freeDiceNumber > 0) {
-      // const randomIndex = Math.floor(Math.random() * this.freeDiceNumber);
-      // this.indices.push(randomIndex + 1);
-      const randomrange = Math.floor(Math.random() * this.freeDiceNumber); //在手中有的骰子中随机选几个
-      for (let i = 0; i < randomrange; i++) {
-        let randomIndex = Math.floor(Math.random() * this.freeDiceNumber) + 1; //随机生成要锁定的索引
-        if (!indices.includes(randomIndex))
-          //如果不存在就加入
-          indices.push(randomIndex);
-      }
+// 绑定加倍按钮点击事件
+var multiplierButtons = document.querySelectorAll(
+  "#jiabei0, #jiabei1, #jiabei2, #jiabei3"
+);
+
+// 随机生成一个骰子点数
+function rollDice(lockdices) {
+  //加入参数读取玩家的骰子
+  let points = [];
+  for (var i = 0; i < 5; i++) {
+    if (!lockdices[i]) {
+      //如果没有被锁
+      var point = Math.floor(Math.random() * 6) + 1;
+      points.push(point);
+    } else {
+      points.push(Number(diceImages[i].src.slice(-5, -4)));
     }
-    // if(indices.length === 0){
-    //   indices = [];
-    // }
-    return indices;
   }
-
-  // 自动选择倍率
-  autoChooseRate() {
-    return Math.floor(Math.random() * 4); // 随机选择0、1、2、3中的一个倍率
-  }
+  return points;
 }
 
-function playGame(numRounds, initialMoney) {
-  const numPlayers = 1;
-  const players = [];
-  const aiPlayers = [];
-
-  for (let i = 0; i < numPlayers; i++) {
-    const name = prompt(`请输入玩家的名称：`);
-    const player = new Player(name, initialMoney);
-    players.push(player);
+// 更新骰子图片
+function updateDiceImages(points, lockedDices) {
+  for (let i = 0; i < 5; i++) {
+    diceImages[i].src = "./img/" + points[i] + ".png";
   }
-
-  const aiPlayer = new AIPlayer("ai", initialMoney);
-  aiPlayers.push(aiPlayer);
-  players.push(aiPlayer);
-
-  let totalRounds = 0;
-  while (totalRounds < numRounds) {
-    let rate = 1;
-    totalRounds++;
-    alert(`\n第${totalRounds}局游戏开始！`);
-
-    for (const player of players) {
-      player.freeDiceNumber = 5;
-      player.resetDices();
-      player.score = 0;
-      player.resetLockedDice();
-    }
-
-    for (let i = 0; i < 2; i++) {
-      alert(`\n第${i + 1}轮投掷开始：`);
-      for (const player of players) {
-        player.resetDices();
-        player.rollDice();
-        alert(`${player.name}的骰子结果：${player.showDices()}`);
-      }
-      alert(`第${i + 1}轮投掷结束\n`);
-
-      for (const player of players) {
-        let indices = [];
-        if (player instanceof AIPlayer) {
-          // 如果是ai玩家
-          indices = player.autoCreateIndices();
-          alert(`索引为${indices}`);
-          // player.lockDice(indices)
-        } else {
-          while (true) {
-            if (player.freeDiceNumber === 0) {
-              indices = [];
-              break;
-            }
-            indices = prompt(
-              `${player.name}的骰子结果：${player.showDices()},${
-                player.name
-              }已锁定的骰子：${player.getLockedDices()},请输入${
-                player.name
-              }要锁定的骰子索引（以空格分隔），或输入'-1'跳过锁定：`
-            ).split(" ");
-            if (indices.length === 1 && indices[0] === "-1") {
-              indices = [];
-              break;
-            }
-            try {
-              indices = indices.map((index) => parseInt(index, 10));
-              if (indices.length > 5) {
-                alert("错误：最多只能锁定5个骰子");
-                continue;
-              }
-              break;
-            } catch (error) {
-              alert("错误：请输入有效的骰子索引");
-            }
-          }
-        }
-        player.lockDice(indices);
-        alert(`${player.name}锁定的骰子：${player.getLockedDices()}`);
-        while (true) {
-          try {
-            let rateInput;
-            if (player instanceof AIPlayer) {
-              rateInput = player.autoChooseRate();
-              alert(`${player.name}选择了倍率${rateInput}`);
-            } else {
-              rateInput = prompt(
-                `请输入${player.name}要增加的倍率(0、1、2、3)：`
-              );
-              if (rateInput === null || rateInput.trim() === "") {
-                throw new Error("输入不能为空");
-              }
-              rateInput = parseInt(rateInput, 10);
-              if (isNaN(rateInput) || ![0, 1, 2, 3].includes(rateInput)) {
-                throw new Error("请输入有效的倍率 (0、1、2、3)");
-              }
-            }
-            rateAdd = rateInput;
-            rate += rateAdd;
-            break;
-          } catch (error) {
-            alert(error.message);
-          }
-        }
-        alert(`现在场上的倍率是${rate}\n`);
-      }
-    }
-
-    alert("第3轮投掷开始：");
-    for (const player of players) {
-      player.resetDices();
-      player.rollDice();
-      alert(`\n${player.name}的最终投掷骰子结果：${player.showDices()}`);
-      for (let i = 0; i < player.dices.length; i++) {
-        player.lockedDices.push(player.dices[i]);
-      }
-      player.getLockedDices().sort();
-    }
-
-    const scores = {};
-
-    for (const player of players) {
-      alert(`${player.name}的最终骰子结果：${player.getLockedDices()}`);
-      player.score = player.scoreCalculate();
-      scores[player.name] = player.score;
-      alert(`${player.name}的分数为：${player.score}`);
-    }
-
-    const maxScore = Math.max(...Object.values(scores));
-    alert(`最高分是${maxScore}`);
-    const isWinner = [];
-    const notWinners = [];
-    const winnersName = [];
-
-    for (const player of players) {
-      if (player.score === maxScore) {
-        isWinner.push(player);
-        winnersName.push(player.name);
-      }
-    }
-
-    for (const player of players) {
-      if (!isWinner.includes(player)) {
-        notWinners.push(player);
-      }
-    }
-
-    if (isWinner.length < players.length) {
-      alert(`\n第${totalRounds}局游戏${winnersName}获胜！`);
-      for (const player of players) {
-        if (!isWinner.includes(player)) {
-          for (const winner of isWinner) {
-            const change =
-              Math.abs(scores[player.name] - scores[winner.name]) * rate;
-            player.money -= change;
-            winner.money += change;
-            alert(`${player.name}输给了${winner.name}，并交出了${change}筹码`);
-          }
-        }
-      }
-    } else if (isWinner.length === players.length) {
-      alert(`\n平局，本局无人获胜，筹码无变动。`);
-    }
-
-    for (const player of players) {
-      alert(`目前玩家${player.name}的筹码为${player.money}`);
-    }
-
-    const brokersName = [];
-
-    for (const player of players) {
-      if (player.money < 0) {
-        brokersName.push(player.name);
-      }
-    }
-
-    if (brokersName.length > 0) {
-      alert(`由于玩家${brokersName}筹码用尽，玩家${winnersName}获得最终胜利`);
-      break;
-    }
-
-    alert(`第${totalRounds}局游戏结束`);
-  }
-
-  alert("\n进入最终结算环节：");
-
-  for (const player of players) {
-    alert(`最终玩家${player.name}的筹码为${player.money}`);
-  }
-
-  const moneys = {};
-  const lastWinner = [];
-
-  for (const player of players) {
-    moneys[player.name] = player.money;
-  }
-
-  const maxMoney = Math.max(...Object.values(moneys));
-  alert(`最高筹码是${maxMoney}`);
-
-  for (const player of players) {
-    if (player.money === maxMoney) {
-      lastWinner.push(player.name);
+  // for (let i = 0; i < 5; i++) {
+  //   diceImages[i].style.filter =
+  //     "brightness(150%) sepia(100%) hue-rotate(-20deg)";
+  // }
+  for (let i = 0; i < 5; i++) {
+    if (lockedDices[i]) {
+      //如果被锁住了，则变颜色
+      diceImages[i].style.filter =
+        "brightness(150%) sepia(100%) hue-rotate(-20deg)";
+    } else {
+      diceImages[i].style.filter = "none";
     }
   }
-
-  alert(`最终的胜利者是${lastWinner}`);
+  // $(".dice").fadeOut(2000);
 }
 
+// 封面
+$(document).ready(function () {
+  $(".starting1").click(function () {
+    $(".start").fadeOut(20);
+    playGame(3, 1000, 1);
+  });
+});
+$(document).ready(function () {
+  $(".starting2").click(function () {
+    $(".start").fadeOut(20);
+    ksyx();
+    playGame(zongjushu, chushiqian, chushibeilv);
+  });
+});
+$(document).ready(function () {
+  $(".starting3").click(function () {
+    $(".start").fadeOut(20);
+    playGame(3, 1000, 1);
+  });
+});
+// 菜单
+$(document).ready(function () {
+  $("#caid").click(function () {
+    $(".cd").slideToggle("slow");
+  });
+});
+
+// 添加玩家
+var a = 1; //玩家名称
+function appendText() {
+  numPlayers++;
+  var txt1 =
+    '<div class="wj" id="wj' +
+    a +
+    '">\
+  <div class="wj1" id ="mingzi' +
+    a +
+    '">玩家' +
+    a +
+    '</div>\
+  <div class="chouma1" id="chouma' +
+    a +
+    '">筹码:</div>\
+  <div class="def1" id="def' +
+    a +
+    '">得分:</div>\
+  </div>'; // 通过 DOM 来创建文本
+  $(".player").append(txt1); // 追加新元素
+  // document.querySelector("#chouma"+i+"").textContent =  "筹码：" + 1000;
+  a++;
+}
+var isbgclick = false;
+// 减少玩家
+$(document).ready(function () {
+  $("#removeplayer").click(function () {
+    if (a == 1) {
+      return;
+    }
+    a--;
+    numPlayers--;
+    $("#wj" + a + "").remove();
+  });
+});
+
+//bonus
 function doubleDouble(counts) {
   if (counts[1] === 2) {
     return [2, 3, 4, 5, 6].some((num) => counts[num] === 2) ? 10 : 0;
@@ -386,14 +324,16 @@ function smallSequence(counts) {
     counts[3] !== 0 &&
     counts[4] !== 0 &&
     counts[5] !== 0 &&
-    counts[6] === 0
+    counts[6] === 0 &&
+    counts[1] === 0
   ) {
     return 30;
   } else if (
     counts[3] !== 0 &&
     counts[4] !== 0 &&
     counts[5] !== 0 &&
-    counts[6] !== 0
+    counts[6] !== 0 &&
+    counts[2] === 0
   ) {
     return 30;
   } else {
@@ -423,10 +363,392 @@ function bigSequence(counts) {
   }
 }
 
-function main() {
-  const gameRound = parseInt(prompt("请输入游戏局数："), 10);
-  const money = parseInt(prompt("请输入每位玩家初始筹码："), 10);
-  playGame(gameRound, money);
+function reDistributeMoney() {
+  const scores = {};
+  for (const player of players) {
+    scores[player.name] = player.score;
+    // alert(`${player.name}的分数${scores[player.name]}，筹码${player.money}`);
+  }
+  const maxScore = Math.max(...Object.values(scores));
+  // alert(`最高分是${maxScore}`);
+  const isWinner = [];
+  const notWinners = [];
+  const winnersName = [];
+
+  for (const player of players) {
+    if (player.score === maxScore) {
+      isWinner.push(player);
+      winnersName.push(player.name);
+    }
+  }
+
+  for (const player of players) {
+    if (!isWinner.includes(player)) {
+      notWinners.push(player);
+    }
+  }
+
+  // alert(`最高分：${maxScore}，双方分数:${scores},赢家：${isWinner}`);
+  if (isWinner.length < players.length) {
+    // alert(`\n第${jushu}局游戏${winnersName}获胜！`);
+    for (const player of players) {
+      if (!isWinner.includes(player)) {
+        for (const winner of isWinner) {
+          const change =
+            Math.abs(scores[player.name] - scores[winner.name]) *
+            currentMultiplier;
+          player.money -= change;
+          winner.money += change;
+          // alert(`${player.name}输给了${winner.name}，并交出了${change}筹码`);
+          // alert(`${winner.name}的筹码${winner.money}`);
+        }
+      }
+    }
+  } else if (isWinner.length === players.length) {
+    alert(`平局，本局无人获胜，筹码无变动。`);
+  }
+
+  for (const player of players) {
+    if (player.money < 0) {
+      alert(`${player.name}的筹码用尽,游戏结束！`);
+      checkWinner();
+    }
+  }
 }
 
-main();
+function checkWinner() {
+  const moneys = {};
+  for (const player of players) {
+    moneys[player.name] = player.money;
+    // alert(`${player.name}的分数${scores[player.name]}，筹码${player.money}`);
+  }
+  const maxMoney = Math.max(...Object.values(moneys));
+  // alert(`最高分是${maxScore}`);
+  const isWinner = [];
+  const notWinners = [];
+  const winnersName = [];
+
+  for (const player of players) {
+    if (player.money === maxMoney) {
+      isWinner.push(player);
+      winnersName.push(player.name);
+    }
+  }
+
+  for (const player of players) {
+    if (!isWinner.includes(player)) {
+      notWinners.push(player);
+    }
+  }
+
+  if (isWinner.length < players.length) {
+    // alert(`${winnersName}获胜！`);
+    for (const winnerName of winnersName) {
+      let numbers = winnerName.match(/\d+/g);
+      let wanjia = "wj" + numbers[0];
+      // alert(`${wanjia}`);
+      document.getElementById(wanjia).style.background =
+        "linear-gradient(to right, rgba(200, 0, 0, 0.25), rgba(255, 127, 0, 0.25), rgba(255, 255, 0, 0.25), rgba(255, 127, 0, 0.25), rgba(255, 0, 0, 0.25))";
+    }
+  } else if (isWinner.length === players.length) {
+    alert(`平局，无人获胜`);
+  }
+}
+
+function playGame(numRounds, initialMoney, initialRate) {
+  var totalRounds = 1; //当前轮数
+  var nowround = 1; //当前局数
+  nextmove.disabled = true; //开局无法点击
+  rollButton.disabled = true;
+  nextmove.style.display = "none";
+  rollButton.style.display = "none";
+  jiabei0.style.display = "none";
+  jiabei1.style.display = "none";
+  jiabei2.style.display = "none";
+  jiabei3.style.display = "none";
+
+  bg.addEventListener("click", gameStart);
+
+  function gameStart() {
+    //每轮游戏开始初始化按钮
+    // alert(`haha:${numRounds},sda:${initialMoney}`);
+    if (a > 2) {
+      //至少要两位玩家才能开始游戏
+      currentMultiplier = initialRate;
+      totalRounds = 1;
+      document.getElementById("removeplayer").disabled = true;
+      document.getElementById("addplayer").disabled = true;
+      if (!isbgclick) {
+        $(".cd").slideToggle("slow");
+      }
+      isbgclick = true;
+      document.querySelector(".duiju .item:nth-child(2)").textContent =
+        "当前轮数：" + totalRounds + "/3";
+      document.querySelector(".duiju .item:nth-child(3)").textContent =
+        "当前局数：" + nowround + "/" + numRounds;
+      document.querySelector(".duiju .item:nth-child(4)").textContent =
+        "当前倍率：" + initialRate;
+      if (nowround <= numRounds) {
+        //第一轮游戏开始
+        if (nowround === 1) {
+          //第一局游戏初始化加入玩家
+          for (let i = 0; i < numPlayers; i++) {
+            const name = "玩家" + String(i + 1);
+            const player = new Player(name, initialMoney);
+            players.push(player);
+            let cmid = "chouma" + (i + 1);
+            let scoreid = "def" + (i + 1);
+            document.getElementById(cmid).innerHTML = "筹码:" + player.money;
+            document.getElementById(scoreid).innerHTML = "得分:" + player.score;
+          }
+          players[0].isRobot = true;
+          document.getElementById("mingzi1").innerHTML = "ai";
+        }
+
+        for (const player of players) {
+          //初始化
+          player.freeDiceNumber = 5;
+          player.resetDices();
+          player.score = 0;
+          player.resetLockedDice();
+        }
+        for (let i = 0; i < players.length; i++) {
+          let scoreid = "def" + (i + 1);
+          document.getElementById(scoreid).innerHTML = "得分:" + 0;
+        }
+        document.getElementById("wj1").style.background =
+          "rgba(203, 250, 203, 0.633)";
+        rollButton.disabled = false;
+        currentMultiplier = initialRate;
+        originrate = initialRate;
+        let points = [1, 1, 1, 1, 1];
+        let lockdices = [false, false, false, false, false];
+        updateDiceImages(points, lockdices);
+        isRollButtonClick = false;
+        nextmove.disabled = true;
+        rollButton.style.display = "block";
+        playernow = 0;
+        bg.disabled = false;
+        bg.style.display = "none";
+        if (players[playernow].isRobot) {
+          rollButton.disabled = true;
+          setTimeout(function () {
+            rollButton.disabled = false;
+            rollButton.click();
+            rollButton.disabled = true;
+          }, 10000);
+        }
+      }
+    }
+  }
+
+  var playernow = 0; // 当前正在进行的玩家是哪位
+  var isRollButtonClick = false;
+
+  rollButton.addEventListener("click", function () {
+    // alert("hah");
+    let points = rollDice(players[playernow].lockedDices);
+    let lockdices = players[playernow].lockedDices;
+    players[playernow].setDice(points, lockdices);
+    // alert(`${players[playernow].dices},${players[playernow].lockedDices}`);
+    updateDiceImages(points, lockdices);
+    // let cmid = "chouma" + playernow;
+    let scoreid = "def" + (playernow + 1);
+    // document.getElementById(cmid).innerHTML = "筹码:" + player.money;
+    players[playernow].scoreCalculate();
+    document.getElementById(scoreid).innerHTML =
+      "得分:" + players[playernow].score;
+    // alert(`${scoreid}`);
+    rollButton.disabled = true; //每轮只能投掷一次
+    nextmove.disabled = false; //投掷完才能进行下一轮
+    isRollButtonClick = true;
+    nextmove.style.display = "block";
+    rollButton.style.display = "none";
+    if (totalRounds < 3) {
+      jiabei0.style.display = "block";
+      jiabei1.style.display = "block";
+      jiabei2.style.display = "block";
+      jiabei3.style.display = "block";
+      jiabei0.disabled = false;
+      jiabei1.disabled = false;
+      jiabei2.disabled = false;
+      jiabei3.disabled = false;
+    }
+
+    if (totalRounds === 3) {
+      //第三轮
+      for (let i = 0; i < 5; i++) {
+        //确定完后锁定的骰子无法再改变
+        if (!players[playernow].lockedDices[i]) {
+          players[playernow].lockedDices[i] =
+            !players[playernow].lockedDices[i];
+        }
+      }
+      updateDiceImages(
+        players[playernow].dices,
+        players[playernow].lockedDices
+      );
+    }
+
+    if (players[playernow].isRobot) {
+      nextmove.disabled = true;
+      if (totalRounds != 3) {
+        players[playernow].autolock();
+        players[playernow].autorate();
+      }
+
+      setTimeout(function () {
+        nextmove.disabled = false;
+        nextmove.click();
+        nextmove.disabled = true;
+      }, 10000);
+    }
+  });
+
+  //绑定骰子锁定解锁事件
+  //当投掷完后才能锁定,第三轮投掷完直接锁定
+  diceElements[1].disabled = true;
+  for (let i = 0; i < 5; i++) {
+    diceElements[i].addEventListener("click", function (event) {
+      if (isRollButtonClick && totalRounds < 3) {
+        //&& !players[playernow].lockedDices[i]
+        var index = [...diceElements].indexOf(event.currentTarget);
+        players[playernow].lockedDices[index] =
+          !players[playernow].lockedDices[index];
+        // alert(`${players[playernow].lockedDices}`);
+        updateDiceImages(
+          players[playernow].dices,
+          players[playernow].lockedDices
+        );
+      }
+    });
+  }
+
+  var originrate = initialRate;
+  multiplierButtons.forEach(function (button, index) {
+    button.addEventListener("click", function () {
+      originrate = currentMultiplier;
+      // alert(`currentmultiplire:${currentMultiplier},originrate:${originrate}`);
+      if (isRollButtonClick && totalRounds < 3) {
+        originrate += index;
+        // 更新当前倍率显示
+        document.querySelector(".duiju .item:nth-child(4)").textContent =
+          "当前倍率：" + originrate;
+      }
+    });
+  });
+
+  nextmove.addEventListener("click", function () {
+    currentMultiplier = originrate;
+    players[playernow].score = players[playernow].scoreCalculate();
+    // alert(
+    //   `${players[playernow].name}锁好了,他的分数是${players[playernow].score}`
+    // );
+    for (let i = 0; i < 5; i++) {
+      //确定完后锁定的骰子无法再改变
+      if (players[playernow].lockedDices[i]) {
+        Object.defineProperty(players[playernow].lockedDices, i, {
+          writable: false,
+        });
+      }
+    }
+
+    playernow++;
+    if (playernow != players.length) {
+      let wanjia = "wj" + (playernow + 1); 
+      document.getElementById(wanjia).style.background =
+        "rgba(203, 250, 203, 0.633)";
+    } else if (totalRounds != 3) {
+      document.getElementById("wj1").style.background =
+        "rgba(203, 250, 203, 0.633)";
+    }
+    let orwanjia = "wj" + playernow;
+    document.getElementById(orwanjia).style.background = "#efe2e26e";
+    if (playernow === players.length && totalRounds < 3) {
+      //1,2轮最后一位玩家
+      totalRounds++;
+      document.querySelector(".duiju .item:nth-child(2)").textContent =
+        "当前轮数：" + totalRounds + "/3";
+      for (let i = 0; i < players.length; i++) {
+        let scoreid = "def" + (i + 1);
+        document.getElementById(scoreid).innerHTML = "得分:" + 0;
+      }
+      playernow = 0;
+      rollButton.style.display = "block";
+      if (players[playernow].isRobot) {
+        rollButton.disabled = true;
+        setTimeout(function () {
+          rollButton.disabled = false;
+          rollButton.click();
+          rollButton.disabled = true;
+        }, 10000);
+      }
+    }
+    // if(totalRounds<3){
+    //   if (players[playernow].isRobot) {
+    //     // nextmove.click();
+    //     rollButton.disabled = true;
+    //     setTimeout(function () {
+    //       rollButton.disabled = false;
+    //       alert("自动点击");
+    //       rollButton.click();
+    //     }, 10000);
+    //   }
+    // }
+    if (playernow === players.length && totalRounds === 3) {
+      //第三轮轮最后一位玩家
+      reDistributeMoney(nowround);
+      for (let i = 0; i < players.length; i++) {
+        let cmid = "chouma" + (i + 1);
+        document.getElementById(cmid).innerHTML = "筹码:" + players[i].money;
+        nextmove.style.display = "none";
+      }
+      bg.disabled = false;
+      bg.style.display = "block";
+      rollButton.style.display = "none";
+      nowround += 1;
+      playernow = 0;
+    } else {
+      rollButton.style.display = "block";
+    }
+    if (nowround === numRounds + 1) {
+      bg.disabled = true;
+      bg.style.display = "none";
+      checkWinner();
+      document.querySelector(".duiju .item:nth-child(4)").textContent =
+        "当前倍率";
+      document.querySelector(".duiju .item:nth-child(2)").textContent =
+        "当前轮数";
+      document.querySelector(".duiju .item:nth-child(3)").textContent =
+        "当前局数";
+      updateDiceImages([1, 1, 1, 1, 1], [false, false, false, false, false]);
+    }
+    updateDiceImages(players[playernow].dices, players[playernow].lockedDices); //更新到下一位玩家的骰子
+    rollButton.disabled = false; //下一次玩家能投掷
+    nextmove.disabled = true;
+    isRollButtonClick = false;
+    nextmove.style.display = "none";
+    jiabei0.style.display = "none";
+    jiabei1.style.display = "none";
+    jiabei2.style.display = "none";
+    jiabei3.style.display = "none";
+    // if (totalRounds === 3 && playernow != players.length) {
+    //   if (players[playernow].isRobot) {
+    //     rollButton.disabled = true;
+    //     setTimeout(function () {
+    //       rollButton.disabled = false;
+    //       rollButton.click();
+    //     }, 10000);
+    //   }
+    // }
+  });
+}
+
+var zongjushu;
+var chushiqian;
+var chushibeilv;
+function ksyx() {
+  zongjushu = Number(document.querySelector('input[name="nub"]').value);
+  chushiqian = Number(document.querySelector('input[name="money"]').value);
+  chushibeilv = Number(document.querySelector('input[name="beil"]').value);
+}
