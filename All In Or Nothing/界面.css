@@ -12,7 +12,9 @@ body {
   justify-content: center; /* 水平居中 */
   align-items: center; /* 垂直居中 */
 }
-.starting {
+.starting1,
+.starting2,
+.starting3 {
   position: relative;
   background-color: antiquewhite;
   width: 100%;
@@ -25,7 +27,13 @@ body {
   font-size: 20px;
   cursor: pointer;
 }
-.starting:hover {
+.starting1:hover {
+  background-color: #58f9478e;
+}
+.starting2:hover {
+  background-color: #58f9478e;
+}
+.starting3:hover {
   background-color: #58f9478e;
 }
 .ai,
@@ -298,19 +306,22 @@ body {
   font-size: 20px;
   display: flex;
   height: 100px;
-  background-color: #efe2e23d;
+  background-color: #efe2e26e;
   align-items: center;
+  margin-bottom: 2px;
+  margin-right: 8px;
   border: 3px solid rgba(222, 184, 135, 0.47);
   border-radius: 10px;
 }
 .wj1 {
-  width: 33%;
+  font-style: LiSu;
+  width: 25%;
 }
 .def1 {
-  width: 33%;
+  width: 40%;
 }
 .chouma1 {
-  width: 33%;
+  width: 35%;
 }
 
 .xiangqing {
