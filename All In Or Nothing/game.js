@@ -119,12 +119,24 @@ function updateDiceImages(points, lockedDices) {
 }
 
 // 封面
-$(document).ready(function () {
-  $(".starting1").click(function () {
-    $(".start").fadeOut(20);
-    playGame(3, 1000, 1);
-  });
-});
+// $(document).ready(function () {
+//   $(".ai1").click(function () {
+//     $(".start").fadeOut(20);
+//     playGame(3, 1000, 1);
+//   });
+// });
+// $(document).ready(function () {
+//   $(".ai2").click(function () {
+//     $(".start").fadeOut(20);
+//     playGame(3, 1000, 1);
+//   });
+// });
+// $(document).ready(function () {
+//   $(".ai3").click(function () {
+//     $(".start").fadeOut(20);
+//     playGame(3, 1000, 1);
+//   });
+// });
 $(document).ready(function () {
   $(".starting2").click(function () {
     $(".start").fadeOut(20);
@@ -153,7 +165,9 @@ function appendText() {
     '<div class="wj" id="wj' +
     a +
     '">\
-  <div class="wj1">玩家' +
+  <div class="wj1" id ="mingzi' +
+    a +
+    '">玩家' +
     a +
     '</div>\
   <div class="chouma1" id="chouma' +
@@ -378,7 +392,8 @@ function checkWinner() {
       let numbers = winnerName.match(/\d+/g);
       let wanjia = "wj" + numbers[0];
       // alert(`${wanjia}`);
-      document.getElementById(wanjia).style.color = "red";
+      document.getElementById(wanjia).style.background =
+        "linear-gradient(to right, rgba(200, 0, 0, 0.25), rgba(255, 127, 0, 0.25), rgba(255, 255, 0, 0.25), rgba(255, 127, 0, 0.25), rgba(255, 0, 0, 0.25))";
     }
   } else if (isWinner.length === players.length) {
     alert(`平局，无人获胜`);
@@ -445,7 +460,8 @@ function playGame(numRounds, initialMoney, initialRate) {
           document.getElementById(scoreid).innerHTML = "得分:" + 0;
         }
         //每局开始初始化图片
-        document.getElementById("wj1").style.color = "blue";
+        document.getElementById("wj1").style.background =
+          "rgba(203, 250, 203, 0.633)";
         rollButton.disabled = false;
         currentMultiplier = initialRate;
         originrate = initialRate;
@@ -511,7 +527,7 @@ function playGame(numRounds, initialMoney, initialRate) {
 
   //绑定骰子锁定解锁事件
   //当投掷完后才能锁定,第三轮投掷完直接锁定
-  diceElements[1].disabled = true;
+  // diceElements[1].disabled = true;
   for (let i = 0; i < 5; i++) {
     diceElements[i].addEventListener("click", function (event) {
       if (isRollButtonClick && totalRounds < 3) {
@@ -560,12 +576,14 @@ function playGame(numRounds, initialMoney, initialRate) {
     playernow++;
     if (playernow != players.length) {
       let wanjia = "wj" + (playernow + 1);
-      document.getElementById(wanjia).style.color = "blue";
+      document.getElementById(wanjia).style.background =
+        "rgba(203, 250, 203, 0.633)";
     } else if (totalRounds != 3) {
-      document.getElementById("wj1").style.color = "blue";
+      document.getElementById("wj1").style.background =
+        "rgba(203, 250, 203, 0.633)";
     }
     let orwanjia = "wj" + playernow;
-    document.getElementById(orwanjia).style.color = "black";
+    document.getElementById(orwanjia).style.background = "#efe2e26e";
     if (playernow === players.length && totalRounds < 3) {
       //1,2轮最后一位玩家
       totalRounds++;
