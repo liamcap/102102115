@@ -52,7 +52,7 @@ class Player {
     for (const dice of this.dices) {
       counts11[dice]++;
     }
-    console.log(counts11);
+    // console.log(counts11);
     for (let i = 0; i < 5; i++) {
       Object.defineProperty(this.lockedDices, i, {
         writable: true,
@@ -1004,3 +1004,17 @@ function ksyx() {
 }
 
 playGame(3, 1000, 1);
+
+
+
+// 播放音乐
+$("#music").click(function(){    
+  var music = document.getElementById("music2");    
+  if(music.paused){    
+      music.play();    
+      $("#music").attr("src","img\music0.m4a");    
+  }else{    
+      music.pause();    
+      $("#music").attr("src","img\music0.m4a");    
+  }    
+}); 
