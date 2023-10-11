@@ -24,12 +24,11 @@ class Player {
   }
 
   autorate(totalRounds) {
-    // alert("自动加倍");
     jiabei0.disabled = false;
     jiabei1.disabled = false;
     jiabei2.disabled = false;
     jiabei3.disabled = false;
-    if (totalRounds === 1 && this.score >= 30) {
+    if (totalRounds === 1 && this.score >= 60) {
       document.getElementById("jiabei3").click();
     } else if (this.score >= 50) {
       document.getElementById("jiabei3").click();
@@ -52,18 +51,15 @@ class Player {
         writable: true,
       });
     }
-    if (this.score >= 30) {
+    if (this.score >= 60) {
       for (let i = 0; i < 5; i++) {
-        diceElements[i].click();
+        // diceElements[i].click();
       }
     } else {
       let count = Math.floor(Math.random() * 6); // 生成0到5之间的随机数量
-      for (let i = 0; i < 5; i++) {
-        diceElements[i].disabled = false;
-      }
       let numbers = [];
       for (let i = 0; i < count; i++) {
-        let randomNum = Math.floor(Math.random() * 5) + 1;
+        let randomNum = Math.floor(Math.random() * 5);
         if (!numbers.includes(randomNum)) {
           numbers.push(randomNum);
         }
@@ -185,26 +181,6 @@ function updateDiceImages(points, lockedDices) {
   // $(".dice").fadeOut(2000);
 }
 
-// 封面
-$(document).ready(function () {
-  $(".starting1").click(function () {
-    $(".start").fadeOut(20);
-    playGame(3, 1000, 1);
-  });
-});
-$(document).ready(function () {
-  $(".starting2").click(function () {
-    $(".start").fadeOut(20);
-    ksyx();
-    playGame(zongjushu, chushiqian, chushibeilv);
-  });
-});
-$(document).ready(function () {
-  $(".starting3").click(function () {
-    $(".start").fadeOut(20);
-    playGame(3, 1000, 1);
-  });
-});
 // 菜单
 $(document).ready(function () {
   $("#caid").click(function () {
@@ -536,7 +512,7 @@ function playGame(numRounds, initialMoney, initialRate) {
             rollButton.disabled = false;
             rollButton.click();
             rollButton.disabled = true;
-          }, 10000);
+          }, 3000);
         }
       }
     }
@@ -546,19 +522,14 @@ function playGame(numRounds, initialMoney, initialRate) {
   var isRollButtonClick = false;
 
   rollButton.addEventListener("click", function () {
-    // alert("hah");
     let points = rollDice(players[playernow].lockedDices);
     let lockdices = players[playernow].lockedDices;
     players[playernow].setDice(points, lockdices);
-    // alert(`${players[playernow].dices},${players[playernow].lockedDices}`);
     updateDiceImages(points, lockdices);
-    // let cmid = "chouma" + playernow;
     let scoreid = "def" + (playernow + 1);
-    // document.getElementById(cmid).innerHTML = "筹码:" + player.money;
     players[playernow].scoreCalculate();
     document.getElementById(scoreid).innerHTML =
       "得分:" + players[playernow].score;
-    // alert(`${scoreid}`);
     rollButton.disabled = true; //每轮只能投掷一次
     nextmove.disabled = false; //投掷完才能进行下一轮
     isRollButtonClick = true;
@@ -594,14 +565,34 @@ function playGame(numRounds, initialMoney, initialRate) {
       nextmove.disabled = true;
       if (totalRounds != 3) {
         players[playernow].autolock();
-        players[playernow].autorate();
+        players[playernow].autorate(totalRounds);
+      } else {
+        for (let i = 0; i < 5; i++) {
+          Object.defineProperty(players[playernow].lockedDices, i, {
+            writable: true,
+          });
+        }
+        for (let i = 0; i < 5; i++) {
+          //确定完后锁定的骰子无法再改变
+          if (!players[playernow].lockedDices[i]) {
+            players[playernow].lockedDices[i] =
+              !players[playernow].lockedDices[i];
+            Object.defineProperty(players[playernow].lockedDices, i, {
+              writable: false,
+            });
+          }
+        }
+        updateDiceImages(
+          players[playernow].dices,
+          players[playernow].lockedDices
+        );
       }
 
       setTimeout(function () {
         nextmove.disabled = false;
         nextmove.click();
         nextmove.disabled = true;
-      }, 10000);
+      }, 3000);
     }
   });
 
@@ -641,9 +632,6 @@ function playGame(numRounds, initialMoney, initialRate) {
   nextmove.addEventListener("click", function () {
     currentMultiplier = originrate;
     players[playernow].score = players[playernow].scoreCalculate();
-    // alert(
-    //   `${players[playernow].name}锁好了,他的分数是${players[playernow].score}`
-    // );
     for (let i = 0; i < 5; i++) {
       //确定完后锁定的骰子无法再改变
       if (players[playernow].lockedDices[i]) {
@@ -655,7 +643,7 @@ function playGame(numRounds, initialMoney, initialRate) {
 
     playernow++;
     if (playernow != players.length) {
-      let wanjia = "wj" + (playernow + 1); 
+      let wanjia = "wj" + (playernow + 1);
       document.getElementById(wanjia).style.background =
         "rgba(203, 250, 203, 0.633)";
     } else if (totalRounds != 3) {
@@ -681,20 +669,9 @@ function playGame(numRounds, initialMoney, initialRate) {
           rollButton.disabled = false;
           rollButton.click();
           rollButton.disabled = true;
-        }, 10000);
+        }, 3000);
       }
     }
-    // if(totalRounds<3){
-    //   if (players[playernow].isRobot) {
-    //     // nextmove.click();
-    //     rollButton.disabled = true;
-    //     setTimeout(function () {
-    //       rollButton.disabled = false;
-    //       alert("自动点击");
-    //       rollButton.click();
-    //     }, 10000);
-    //   }
-    // }
     if (playernow === players.length && totalRounds === 3) {
       //第三轮轮最后一位玩家
       reDistributeMoney(nowround);
@@ -724,7 +701,9 @@ function playGame(numRounds, initialMoney, initialRate) {
       updateDiceImages([1, 1, 1, 1, 1], [false, false, false, false, false]);
     }
     updateDiceImages(players[playernow].dices, players[playernow].lockedDices); //更新到下一位玩家的骰子
-    rollButton.disabled = false; //下一次玩家能投掷
+    if (!players[playernow].isRobot) {
+      rollButton.disabled = false;
+    } //下一次玩家能投掷
     nextmove.disabled = true;
     isRollButtonClick = false;
     nextmove.style.display = "none";
@@ -752,3 +731,5 @@ function ksyx() {
   chushiqian = Number(document.querySelector('input[name="money"]').value);
   chushibeilv = Number(document.querySelector('input[name="beil"]').value);
 }
+
+playGame(3, 1000, 1);
