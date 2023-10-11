@@ -119,24 +119,6 @@ function updateDiceImages(points, lockedDices) {
 }
 
 // 封面
-// $(document).ready(function () {
-//   $(".ai1").click(function () {
-//     $(".start").fadeOut(20);
-//     playGame(3, 1000, 1);
-//   });
-// });
-// $(document).ready(function () {
-//   $(".ai2").click(function () {
-//     $(".start").fadeOut(20);
-//     playGame(3, 1000, 1);
-//   });
-// });
-// $(document).ready(function () {
-//   $(".ai3").click(function () {
-//     $(".start").fadeOut(20);
-//     playGame(3, 1000, 1);
-//   });
-// });
 $(document).ready(function () {
   $(".starting2").click(function () {
     $(".start").fadeOut(20);
