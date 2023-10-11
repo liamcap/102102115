@@ -23,19 +23,22 @@ class Player {
     this.isRobot = false;
   }
 
-  autorate(totalRounds) {
+  autorate(totalRounds, allscore) {
     jiabei0.disabled = false;
     jiabei1.disabled = false;
     jiabei2.disabled = false;
     jiabei3.disabled = false;
+    let maxscore = Math.max(...Object.values(allscore));
     if (totalRounds === 1 && this.score >= 60) {
       document.getElementById("jiabei3").click();
-    } else if (this.score >= 50) {
-      document.getElementById("jiabei3").click();
     } else if (totalRounds === 1) {
-      let randomNum = Math.floor(Math.random() * 4);
+      let randomNum = Math.floor(Math.random() * 3);
       let ratebutton = "jiabei" + randomNum;
       document.getElementById(ratebutton).click();
+    } else if (this.score === maxscore) {
+      document.getElementById("jiabei3").click();
+    } else if (this.score < maxscore) {
+      document.getElementById("jiabei0").click();
     }
     jiabei0.disabled = true;
     jiabei1.disabled = true;
@@ -43,30 +46,310 @@ class Player {
     jiabei3.disabled = true;
   }
 
-  autolock() {
+  autolock(totalRounds) {
     this.scoreCalculate();
-    // alert("自动锁定");
+    let counts11 = new Array(7).fill(0);
+    for (const dice of this.dices) {
+      counts11[dice]++;
+    }
+    console.log(counts11);
     for (let i = 0; i < 5; i++) {
       Object.defineProperty(this.lockedDices, i, {
         writable: true,
       });
     }
-    if (this.score >= 60) {
+
+    if (this.score >= 100) {
+      //五连
       for (let i = 0; i < 5; i++) {
-        // diceElements[i].click();
-      }
-    } else {
-      let count = Math.floor(Math.random() * 6); // 生成0到5之间的随机数量
-      let numbers = [];
-      for (let i = 0; i < count; i++) {
-        let randomNum = Math.floor(Math.random() * 5);
-        if (!numbers.includes(randomNum)) {
-          numbers.push(randomNum);
-        }
-      }
-      for (let i of numbers) {
         if (!this.lockedDices[i]) {
           diceElements[i].click();
+        }
+      }
+    } else if (
+      //四连
+      counts11[1] === 4 ||
+      counts11[2] === 4 ||
+      counts11[3] === 4 ||
+      counts11[4] === 4 ||
+      counts11[5] === 4 ||
+      counts11[6] === 4
+    ) {
+      for (let i = 1; i <= 6; i++) {
+        if (counts11[i] === 4) {
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === i) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+              }
+            }
+          }
+        }
+      }
+    } else if (
+      //大顺子
+      (counts11[1] !== 0 &&
+        counts11[2] !== 0 &&
+        counts11[3] !== 0 &&
+        counts11[4] !== 0 &&
+        counts11[5] !== 0) ||
+      (counts11[2] !== 0 &&
+        counts11[3] !== 0 &&
+        counts11[4] !== 0 &&
+        counts11[5] !== 0 &&
+        counts11[6] !== 0)
+    ) {
+      console.log("大顺子");
+      for (let i = 0; i < 5; i++) {
+        if (!this.lockedDices[i]) {
+          diceElements[i].click();
+        }
+      }
+    } else if (
+      //小顺子，先锁四个，如何再看能不能变成大顺子
+      counts11[1] !== 0 &&
+      counts11[2] !== 0 &&
+      counts11[3] !== 0 &&
+      counts11[4] !== 0
+    ) {
+      for (let i = 1; i <= 6; i++) {
+        let hastwo = 0;
+        if (counts11[i] === 2) {
+          hastwo = i;
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === hastwo) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+                break;
+              }
+            }
+          }
+        }
+        if (counts11[i] !== 0 && i !== 6 && i !== hastwo) {
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === i) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+              }
+            }
+          }
+        }
+      }
+    } else if (
+      counts11[2] !== 0 &&
+      counts11[3] !== 0 &&
+      counts11[4] !== 0 &&
+      counts11[5] !== 0
+    ) {
+      for (let i = 1; i <= 6; i++) {
+        let hastwo = 0;
+        if (counts11[i] === 2) {
+          hastwo = i;
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === hastwo) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+                break;
+              }
+            }
+          }
+        }
+        if (counts11[i] !== 0 && i !== hastwo) {
+          for (let j = 0; i < 5; j++) {
+            if (this.dices[j] === i) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+              }
+            }
+          }
+        }
+      }
+    } else if (
+      counts11[3] !== 0 &&
+      counts11[4] !== 0 &&
+      counts11[5] !== 0 &&
+      counts11[6] !== 0
+    ) {
+      for (let i = 1; i <= 6; i++) {
+        let hastwo = 0;
+        if (counts11[i] === 2) {
+          hastwo = i;
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === hastwo) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+                break;
+              }
+            }
+          }
+        }
+        if (counts11[i] !== 0 && i !== 1 && i !== hastwo) {
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === i) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+              }
+            }
+          }
+        }
+      }
+    } else if (
+      //三连
+      (counts11[1] === 3 ||
+        counts11[2] === 3 ||
+        counts11[3] === 3 ||
+        counts11[4] === 3 ||
+        counts11[5] === 3 ||
+        counts11[6] === 3) &&
+      totalRounds !== 3
+    ) {
+      for (let i = 1; i <= 6; i++) {
+        if (counts11[i] === 3) {
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === i) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+              }
+            }
+          }
+        }
+      }
+    } else if (
+      counts11[1] !== 0 &&
+      counts11[2] !== 0 &&
+      counts11[3] !== 0 &&
+      counts11[4] === 0
+    ) {
+      for (let i = 1; i <= 3; i++) {
+        let morethanone = 0;
+        if (counts11[i] > 1) {
+          morethanone = i;
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === morethanone) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+                break;
+              }
+            }
+          }
+        }
+        if (counts11[i] !== 0 && i !== morethanone) {
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === i) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+              }
+            }
+          }
+        }
+      }
+    } else if (
+      counts11[1] === 0 &&
+      counts11[2] !== 0 &&
+      counts11[3] !== 0 &&
+      counts11[4] !== 0 &&
+      counts11[5] === 0
+    ) {
+      for (let i = 2; i <= 4; i++) {
+        let morethanone = 0;
+        if (counts11[i] > 1) {
+          morethanone = i;
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === morethanone) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+                break;
+              }
+            }
+          }
+        }
+        if (counts11[i] !== 0 && i !== morethanone) {
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === i) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+              }
+            }
+          }
+        }
+      }
+    } else if (
+      counts11[2] === 0 &&
+      counts11[3] !== 0 &&
+      counts11[4] !== 0 &&
+      counts11[5] !== 0 &&
+      counts11[6] === 0
+    ) {
+      for (let i = 3; i <= 5; i++) {
+        let morethanone = 0;
+        if (counts11[i] > 1) {
+          morethanone = i;
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === morethanone) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+                break;
+              }
+            }
+          }
+        }
+        if (counts11[i] !== 0 && i !== morethanone) {
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === i) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+              }
+            }
+          }
+        }
+      }
+    } else if (
+      counts11[3] === 0 &&
+      counts11[4] !== 0 &&
+      counts11[5] !== 0 &&
+      counts11[6] !== 0
+    ) {
+      for (let i = 4; i <= 6; i++) {
+        let morethanone = 0;
+        if (counts11[i] > 1) {
+          morethanone = i;
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === morethanone) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+                break;
+              }
+            }
+          }
+        }
+        if (counts11[i] !== 0 && i !== morethanone) {
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === i) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+              }
+            }
+          }
+        }
+      }
+    } else if (
+      //二连
+      counts11[1] === 2 ||
+      counts11[2] === 2 ||
+      counts11[3] === 2 ||
+      counts11[4] === 2 ||
+      counts11[5] === 2 ||
+      counts11[6] === 2
+    ) {
+      for (let i = 1; i <= 6; i++) {
+        if (counts11[i] === 2) {
+          for (let j = 0; j < 5; j++) {
+            if (this.dices[j] === i) {
+              if (!this.lockedDices[j]) {
+                diceElements[j].click();
+              }
+            }
+          }
         }
       }
     }
@@ -74,14 +357,6 @@ class Player {
       Object.defineProperty(this.lockedDices, i, {
         writable: false,
       });
-    }
-  }
-
-  autolock1() {
-    const counts = new Array(7).fill(0);
-
-    for (const dice of this.dices) {
-      counts[dice]++;
     }
   }
 
@@ -172,8 +447,7 @@ function updateDiceImages(points, lockedDices) {
   for (let i = 0; i < 5; i++) {
     if (lockedDices[i]) {
       //如果被锁住了，则变颜色
-      diceImages[i].style.filter =
-        "brightness(150%) sepia(100%) hue-rotate(-20deg)";
+      diceImages[i].style.filter = "grayscale(100%)";
     } else {
       diceImages[i].style.filter = "none";
     }
@@ -199,7 +473,7 @@ function appendText() {
   <div class="wj1" id ="mingzi' +
     a +
     '">玩家' +
-    a +
+    (a - 1) +
     '</div>\
   <div class="chouma1" id="chouma' +
     a +
@@ -216,7 +490,7 @@ var isbgclick = false;
 // 减少玩家
 $(document).ready(function () {
   $("#removeplayer").click(function () {
-    if (a == 1) {
+    if (a == 2) {
       return;
     }
     a--;
@@ -432,6 +706,8 @@ function checkWinner() {
 }
 
 function playGame(numRounds, initialMoney, initialRate) {
+  document.getElementById("addplayer").click();
+  document.getElementById("mingzi1").innerHTML = "ai";
   var totalRounds = 1; //当前轮数
   var nowround = 1; //当前局数
   nextmove.disabled = true; //开局无法点击
@@ -478,7 +754,6 @@ function playGame(numRounds, initialMoney, initialRate) {
             document.getElementById(scoreid).innerHTML = "得分:" + player.score;
           }
           players[0].isRobot = true;
-          document.getElementById("mingzi1").innerHTML = "ai";
         }
 
         for (const player of players) {
@@ -512,7 +787,7 @@ function playGame(numRounds, initialMoney, initialRate) {
             rollButton.disabled = false;
             rollButton.click();
             rollButton.disabled = true;
-          }, 3000);
+          }, 1500);
         }
       }
     }
@@ -560,12 +835,17 @@ function playGame(numRounds, initialMoney, initialRate) {
         players[playernow].lockedDices
       );
     }
-
+    let allscores = [];
+    for (const player of players) {
+      allscores.push(player.score);
+    }
     if (players[playernow].isRobot) {
       nextmove.disabled = true;
       if (totalRounds != 3) {
-        players[playernow].autolock();
-        players[playernow].autorate(totalRounds);
+        setTimeout(function () {
+          players[playernow].autolock(totalRounds);
+          players[playernow].autorate(totalRounds, allscores);
+        }, 1500);
       } else {
         for (let i = 0; i < 5; i++) {
           Object.defineProperty(players[playernow].lockedDices, i, {
@@ -592,7 +872,7 @@ function playGame(numRounds, initialMoney, initialRate) {
         nextmove.disabled = false;
         nextmove.click();
         nextmove.disabled = true;
-      }, 3000);
+      }, 4000);
     }
   });
 
@@ -669,7 +949,7 @@ function playGame(numRounds, initialMoney, initialRate) {
           rollButton.disabled = false;
           rollButton.click();
           rollButton.disabled = true;
-        }, 3000);
+        }, 1500);
       }
     }
     if (playernow === players.length && totalRounds === 3) {
@@ -711,15 +991,6 @@ function playGame(numRounds, initialMoney, initialRate) {
     jiabei1.style.display = "none";
     jiabei2.style.display = "none";
     jiabei3.style.display = "none";
-    // if (totalRounds === 3 && playernow != players.length) {
-    //   if (players[playernow].isRobot) {
-    //     rollButton.disabled = true;
-    //     setTimeout(function () {
-    //       rollButton.disabled = false;
-    //       rollButton.click();
-    //     }, 10000);
-    //   }
-    // }
   });
 }
 
