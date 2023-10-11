@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI</title>
+    <link rel="stylesheet" href="AI.css" />
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+  </head>
+
+  <body>
+    <canvas id="Mycanvas">
+      <script src="Mycanvas.js"></script>
+    </canvas>
+    <!-- <video
+      src="file:///E:/%E4%BD%9C%E4%B8%9A/%E5%A4%A7%E4%B8%89/dataproject/RollTheDice/img/seagull1.mp4"
+      autoplay
+      loop
+      muted
+    ></video> -->
+    <!-- 对局状态 -->
+    <div class="duiju">
+      <div class="item1">
+        <button id="caid">菜单</button>
+        <div class="cd">
+          <button id="addplayer" onclick="appendText()">添加玩家</button>
+          <button id="removeplayer" onclick="remove()">减少玩家</button>
+          <button
+            id="remake"
+            onclick="{ if(confirm('确定跳转？'))location.href='file:///E:/作业/大三/dataproject/RollTheDice/%E7%95%8C%E9%9D%A2.html'}"
+          >
+            刷新一下
+          </button>
+        </div>
+      </div>
+      <div class="item">当前轮数</div>
+      <div class="item">当前局数</div>
+      <div class="item">当前倍率</div>
+    </div>
+
+    <!-- 骰子区域 -->
+    <div class="touzi">
+      <div class="dice">
+        <img id="img1" src="./img/1.png" width="200px" height="200px" />
+      </div>
+      <div class="dice">
+        <img id="img2" src="./img/1.png" width="200px" height="200px" />
+      </div>
+      <div class="dice">
+        <img id="img3" src="./img/1.png" width="200px" height="200px" />
+      </div>
+      <div class="dice">
+        <img id="img4" src="./img/1.png" width="200px" height="200px" />
+      </div>
+      <div class="dice">
+        <img id="img5" src="./img/1.png" width="200px" height="200px" />
+      </div>
+      <button id="btn">摇骰子</button>
+      <!-- 投骰子的按钮 -->
+      <button id="nextmove">下一步</button>
+      <button id="bg">开始</button>
+    </div>
+    <div class="clear"></div>
+    <button id="jiabei0">不加倍</button>
+    <button id="jiabei1">加倍</button>
+    <button id="jiabei2">两倍</button>
+    <button id="jiabei3">三倍</button>
+
+    <!-- 玩家情况区域 -->
+    <div class="player"></div>
+
+    <!-- <script src="game.js"></script> -->
+    <script src="ai.js"></script>
+  </body>
+</html>
