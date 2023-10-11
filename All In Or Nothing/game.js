@@ -110,18 +110,45 @@ function updateDiceImages(points, lockedDices) {
   for (let i = 0; i < 5; i++) {
     if (lockedDices[i]) {
       //如果被锁住了，则变颜色
-      diceImages[i].style.filter =
-        "brightness(150%) sepia(100%) hue-rotate(-20deg)";
+      diceImages[i].style.filter = "grayscale(100%)";
     } else {
       diceImages[i].style.filter = "none";
     }
   }
 }
 
+// 游戏规则
+const rule=document.getElementById('rule');
+const popup=document.getElementById('popup');
+const over=document.getElementById('over');
+rule.addEventListener('click',function(){
+  popup.style.display='block';
+  // over.style.display='block';
+});
+over.addEventListener('click',function(){
+  popup.style.display='none';
+})
+
+
+
+// 播放音乐
+$("#music").click(function(){    
+  var music = document.getElementById("music2");    
+  if(music.paused){    
+      music.play();    
+      $("#music").attr("src","img\music0.m4a");    
+  }else{    
+      music.pause();    
+      $("#music").attr("src","img\music0.m4a");    
+  }    
+}); 
+
+
 // 封面
 $(document).ready(function () {
   $(".starting2").click(function () {
     $(".start").fadeOut(20);
+    $("#stvideo").fadeOut(20);
     ksyx();
     playGame(zongjushu, chushiqian, chushibeilv);
   });
@@ -129,6 +156,7 @@ $(document).ready(function () {
 $(document).ready(function () {
   $(".starting3").click(function () {
     $(".start").fadeOut(20);
+    $("#stvideo").fadeOut(20);
     playGame(3, 1000, 1);
   });
 });
