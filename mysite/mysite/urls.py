@@ -37,4 +37,6 @@ urlpatterns = [
     path('info/add/', views.info_add),
 
     path('info/delete/', views.info_delete),
+
+    path('login/', views.LoginView.as_view()),
 ]
