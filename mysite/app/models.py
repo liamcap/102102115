@@ -5,6 +5,7 @@ class UserInfo(models.Model):
     password = models.CharField(max_length=64)
     age =models.IntegerField(default=2)
     likes = models.IntegerField(null=True, blank=True)  #新增不出错
+    token = models.CharField(max_length=64, null=True, blank=True)
 
 # 新建数据 insert into app_Userinfo(name)values("Liam")
 # UserInfo.objects.create(name="Liam")
