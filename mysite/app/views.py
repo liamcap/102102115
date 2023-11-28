@@ -8,20 +8,6 @@ import uuid
 def index(request):
     return HttpResponse("欢迎使用")
 
-# def user_list(request):
-
-#     # 默认app目录下寻找templates
-#     return render(request, "user_list.html")
-
-# def user_add(request):
-#     return HttpResponse("添加用户")
-
-# def tpl(request):
-#     name = "taylor"
-#     roles = ["the", "eras", "tour"]
-#     user_info = {"name":"swift", "salary":1000}
-#     return render(request, "tpl.html", {"n1":name, "n2":roles, "n3":user_info})
-
 def orm(request):
     UserInfo.objects.all().delete()
     UserInfo.objects.create(name="Liam", password="999")
