@@ -24,19 +24,15 @@ urlpatterns = [
     # www.xxx.com/index/ -> 函数
     path('index/', views.index),
 
-    # path('user/list/', views.user_list),
+    # path('orm/', views.orm),
 
-    # path('user/add/', views.user_add),
+    path('user/list/', views.info_list),
 
-    # path('tpl/', views.tpl),
+    path('user/add/', views.info_add),
 
-    path('orm/', views.orm),
-
-    path('info/list/', views.info_list),
-
-    path('info/add/', views.info_add),
-
-    path('info/delete/', views.info_delete),
+    path('user/delete/', views.info_delete),
 
     path('login/', views.LoginView.as_view()),
+
+    path('sss/',views.infoView.as_view())
 ]
