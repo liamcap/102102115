@@ -17,17 +17,7 @@ def index(request):
 # def user_add(request):
 #     return HttpResponse("添加用户")
 
-# def tpl(request):
-#     name = "taylor"
-#     roles = ["the", "eras", "tour"]
-#     user_info = {"name":"swift", "salary":1000}
-#     return render(request, "tpl.html", {"n1":name, "n2":roles, "n3":user_info})
 
-# def orm(request):
-#     UserInfo.objects.all().delete()
-#     UserInfo.objects.create(name="Liam", password="999")
-#     UserInfo.objects.create(name="Cap", password="1221", likes=5)
-#     return HttpResponse("success")
 
 def info_list(request):
 
